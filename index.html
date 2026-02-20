@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rodzicownik</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <link rel="apple-touch-icon" href="icon.png">
+</head>
+<body>
+    <div class="app-container">
+        <header class="no-print">
+            <h1 id="tytulAplikacji">Rodzicownik 📔💙</h1>
+        </header>
+
+        <div class="print-header ukryty">
+            <h2>Raport Medyczny Dziecka</h2><hr><div id="printDaneDziecka"></div><hr>
+        </div>
+
+        <main id="ekranStart" class="ekran no-print">
+            
+            <div class="powitanie">
+                <div class="badge-mowi">Mówi...</div>
+                <h2>Cześć, Rodzicu! 👋</h2>
+                <p>Twój notatnik dowodzenia.</p>
+            </div>
+
+            <div class="premium-banner" id="banerPremiumPulpit">
+                <div class="premium-banner-ikona">👑</div>
+                <div class="premium-banner-tekst">
+                    <strong>Odblokuj wersję Premium!</strong>
+                    <span>Więcej profili dzieci, Sejf i PDF</span>
+                </div>
+                <div class="premium-banner-strzalka">➤</div>
+            </div>
+
+            <div class="ad-banner no-print">
+                <div class="ad-label">Reklama</div>
+                <div class="ad-content" style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                    <strong style="color: #94a3b8; font-size: 14px; letter-spacing: 2px; margin: 0; text-transform: uppercase;">Miejsce na Twoją Reklamę</strong>
+                </div>
+            </div>
+            
+            <div class="dashboard-grid">
+                
+                <div class="grid-sekcja">👶 Zdrowie i Pomiary</div>
+                <div class="kafelek" id="kafelekZdrowie"><div class="ikona-wrapper" style="background: linear-gradient(135deg, #ffcdd2, #ef9a9a); color: #c62828;">🩺</div><span>Apteczka</span></div>
+                <div class="kafelek" id="kafelekKarmienie"><div class="ikona-wrapper" style="background: linear-gradient(135deg, #f8bbd0, #f48fb1); color: #ad1457;">🍼</div><span>Karmienie</span></div>
+                <div class="kafelek" id="kafelekBilans"><div class="ikona-wrapper" style="background: linear-gradient(135deg, #c5cae9, #9fa8da); color: #283593;">📈</div><span>Bilans</span></div>
+                <div class="kafelek" id="kafelekRozmiary"><div class="ikona-wrapper" style="background: linear-gradient(135deg, #b2dfdb, #80cbc4); color: #00695c;">👕</div><span>Rozmiary</span></div>
+
+                <div class="grid-sekcja">📅 Organizacja Dnia</div>
+                <div class="kafelek" id="kafelekPlan"><div class="ikona-wrapper" style="background: linear-gradient(135deg, #d1c4e9, #b39ddb); color: #4527a0;">📚</div><span>Plan Zajęć</span></div>
+                <div class="kafelek" id="kafelekPosilki"><div class="ikona-wrapper" style="background: linear-gradient(135deg, #dcedc8, #c5e1a5); color: #558b2f;">🍴</div><span>Jadłospis</span></div>
+                <div class="kafelek" id="kafelekNotatki"><div class="ikona-wrapper" style="background: linear-gradient(135deg, #ffe0b2, #ffcc80); color: #ef6c00;">📝</div><span>Notatki</span></div>
+                <div class="kafelek" id="kafelekStoper"><div class="ikona-wrapper" style="background: linear-gradient(135deg, #e1bee7, #ce93d8); color: #6a1b9a;">⏱️</div><span>Minutnik</span></div>
+
+                <div class="grid-sekcja">🏠 Zarządzanie Domem</div>
+                <div class="kafelek" id="kafelekObowiazki"><div class="ikona-wrapper" style="background: linear-gradient(135deg, #fff9c4, #fff59d); color: #f57f17;">⭐</div><span>Punkty</span></div>
+                <div class="kafelek" id="kafelekFinanse"><div class="ikona-wrapper" style="background: linear-gradient(135deg, #c8e6c9, #a5d6a7); color: #2e7d32;">💰</div><span>Wydatki</span></div>
+                <div class="kafelek" id="kafelekPakowanie"><div class="ikona-wrapper" style="background: linear-gradient(135deg, #b2ebf2, #80deea); color: #006064;">🧳</div><span>Pakowanie</span></div>
+                <div class="kafelek" id="kafelekKontakty"><div class="ikona-wrapper" style="background: linear-gradient(135deg, #bbdefb, #90caf9); color: #1565c0;">📞</div><span>Telefony</span></div>
+                <div class="kafelek" id="kafelekEkrany" style="grid-column: span 2;"><div class="ikona-wrapper" style="background: linear-gradient(135deg, #94a3b8, #64748b); color: #0f172a; margin: 0 auto 12px auto;">💻</div><span>Czas Ekranowy</span></div>
+
+                <div class="grid-sekcja">💛 Pamiętnik</div>
+                <div class="kafelek" id="kafelekOsiagniecia"><div class="ikona-wrapper" style="background: linear-gradient(135deg, #ffecb3, #ffe082); color: #f9a825;">🏆</div><span>Sukcesy</span></div>
+                <div class="kafelek" id="kafelekCytaty"><div class="ikona-wrapper" style="background: linear-gradient(135deg, #ffccbc, #ffab91); color: #d84315;">💬</div><span>Złote Myśli</span></div>
+
+                <div class="grid-sekcja" style="color: #8e24aa; border-bottom-color: rgba(142, 36, 170, 0.3);">👑 Strefa Premium</div>
+                <div class="kafelek kafelek-szeroki" id="kafelekAsystent" style="grid-column: span 2; background: linear-gradient(135deg, #a18cd1, #fbc2eb); border: none;">
+                    <div class="ikona-wrapper" style="background: rgba(255,255,255,0.3); color: white; margin-bottom: 0; margin-right: 15px;">🤖</div>
+                    <span style="font-size: 16px; color: white; font-weight: 800;">Asystent D@niel</span>
+                </div>
+                <div class="kafelek kafelek-szeroki" id="kafelekSejf" style="grid-column: span 2;">
+                    <div class="ikona-wrapper" style="background: #eceff1; color: #455a64; margin-bottom: 0; margin-right: 15px;">🗂️</div>
+                    <span style="font-size: 15px;">Sejf Dokumentów (PIN)</span>
+                </div>
+
+                <div class="grid-sekcja" style="color: #059669; border-bottom-color: rgba(5, 150, 105, 0.3);">🚀 Tryb Zabawy</div>
+                <button id="kafelekTrybDziecka" class="btn-premium" style="grid-column: span 2; background: linear-gradient(135deg, #34d399, #10b981);">
+                    👦👧 Wejdź w Tryb Dziecka
+                </button>
+
+            </div>
+
+            <div class="ad-banner no-print" style="margin-top: 0;">
+                <div class="ad-label">Reklama</div>
+                <div class="ad-content" style="display: flex; align-items: center; justify-content: center; height: 100%; min-height: 50px;">
+                    <strong style="color: #94a3b8; font-size: 14px; letter-spacing: 2px; margin: 0; text-transform: uppercase;">Miejsce na Twoją Reklamę</strong>
+                </div>
+            </div>
+
+            <footer class="nota-prawna">
+                <strong>© 2026 Rodzicownik | Autor: Daniel Ćw.<br>Wszelkie prawa zastrzeżone.</strong>
+                <p style="text-align: justify; margin-top: 10px; line-height: 1.5; font-size: 10px; color: #64748b;">
+                    Aplikacja ma charakter wyłącznie pomocniczy i edukacyjny.<br><br>
+                    <strong>1. Wyłączenie odpowiedzialności medycznej:</strong> Moduł Apteczki, kalkulator dawek leków oraz informacje generowane przez Asystenta D@niela w żadnym wypadku nie zastępują profesjonalnej porady lekarskiej, diagnozy, ani opinii farmaceuty. Podane dawki są wyłącznie orientacyjne. Zawsze sprawdzaj dawkowanie na ulotce leku lub konsultuj się z pediatrą.<br><br>
+                    <strong>2. Bezpieczeństwo Danych:</strong> Wszelkie dane wprowadzane w aplikacji są zapisywane <strong>wyłącznie lokalnie</strong> w pamięci Twojego urządzenia. Aplikacja nie udostępnia Twoich danych.
+                </p>
+            </footer>
+        </main>
+
+        <main id="ekranKarmienie" class="ekran ukryty no-print">
+            <button id="btnWrocKarmienie" class="btn-wroc"><span class="wroc-ikona">🔙</span> Wróć</button>
+            <div class="card">
+                <h3>🍼 Pora Karmienia</h3>
+                <div class="dodaj-akcje-panel">
+                    <select id="noweKarmienieTyp">
+                        <option value="Lewa Pierś">Lewa Pierś</option>
+                        <option value="Prawa Pierś">Prawa Pierś</option>
+                        <option value="Butelka (Mleko matki)">Butelka (Mleko matki)</option>
+                        <option value="Butelka (Modyfikowane)">Butelka (Modyfikowane)</option>
+                        <option value="Stały posiłek (Rozszerzanie)">Stały posiłek</option>
+                    </select>
+                    <input type="number" id="noweKarmienieIlosc" placeholder="Ilość ml (jeśli butelka)">
+                    <div style="display: flex; gap: 10px; margin-top: 5px;">
+                        <input type="date" id="noweKarmienieData" style="flex: 1;">
+                        <input type="time" id="noweKarmienieCzas" style="flex: 1;">
+                    </div>
+                    <button id="btnDodajKarmienie" class="btn-akcja" style="background-color: #f06292; margin-top: 10px;">➕ Zapisz karmienie</button>
+                </div>
+            </div>
+            <div class="historia"><ul id="listaKarmienie" style="display: flex; flex-direction: column; gap: 10px;"></ul></div>
+        </main>
+
+        <main id="ekranBilans" class="ekran ukryty no-print">
+            <button id="btnWrocBilans" class="btn-wroc"><span class="wroc-ikona">🔙</span> Wróć</button>
+            <div class="card">
+                <h3>📈 Bilans Rozwoju</h3>
+                <div class="dodaj-akcje-panel">
+                    <input type="date" id="nowyBilansData">
+                    <input type="number" id="nowyBilansWaga" placeholder="Waga (kg)" step="0.01">
+                    <input type="number" id="nowyBilansWzrost" placeholder="Wzrost (cm)" step="0.1">
+                    <input type="number" id="nowyBilansGlowa" placeholder="Obwód głowy (cm)" step="0.1">
+                    <button id="btnDodajBilans" class="btn-akcja" style="background-color: #5c6bc0; margin-top: 10px;">💾 Zapisz pomiary</button>
+                </div>
+            </div>
+            <div class="historia" style="padding-bottom: 0;"><ul id="listaBilans" style="display: flex; flex-direction: column; gap: 10px;"></ul></div>
+            
+            <div class="card" style="margin-top: 15px;">
+                <h3>💉 Kalendarz Szczepień</h3>
+                <div class="dodaj-akcje-panel">
+                    <input type="date" id="noweSzczepienieData">
+                    <input type="text" id="noweSzczepienieNazwa" placeholder="Nazwa szczepionki (np. 6w1, WZW B)">
+                    <button id="btnDodajSzczepienie" class="btn-akcja" style="background-color: #00acc1; margin-top: 10px;">💉 Dodaj szczepienie</button>
+                </div>
+            </div>
+            <div class="historia"><ul id="listaSzczepien" style="display: flex; flex-direction: column; gap: 10px;"></ul></div>
+        </main>
+
+        <main id="ekranZdrowie" class="ekran ukryty">
+            <button id="btnWrocZdrowie" class="btn-wroc no-print"><span class="wroc-ikona">🔙</span> Wróć</button>
+            <div id="panelOstrzezen" class="ostrzezenie no-print ukryty"></div>
+            <div class="card no-print">
+                <h3>Zarejestruj zdarzenie</h3><select id="typLeku"></select>
+                <div id="panelNowegoLeku" class="dodaj-akcje-panel ukryty"><input type="text" id="nowaNazwaLeku" placeholder="Np. Amotaks..."><button id="btnZapiszNowyLek" class="btn-akcja">💾 Dodaj nowy lek</button></div>
+                <button id="btnKalkulator" class="btn-premium" style="margin-top: 15px; margin-bottom: 10px;">✨ Oblicz dawkę</button>
+                <div id="infoDawka" class="info-tekst ukryty"></div>
+                <input type="number" id="wartosc" placeholder="Dawka (np. 5ml, 38.5)" step="0.1"><button id="btnZapiszLek" class="btn-akcja">Zapisz podanie</button>
+            </div>
+            <div class="card notatki-lekarz-card"><h3>📝 Pytania do lekarza</h3><textarea id="notatkiLekarz" rows="3" placeholder="Zapisuje się samo w tle..."></textarea></div>
+            <div class="historia"><h3>Oś czasu choroby:</h3><ul id="listaZdarzen"></ul></div>
+            <div class="akcje-raportu no-print"><button id="btnWyczysc" class="btn-danger">🗑️ Zakończ chorobę i wyczyść historię</button></div>
+        </main>
+
+        <main id="ekranObowiazki" class="ekran ukryty no-print">
+            <button id="btnWrocObowiazki" class="btn-wroc"><span class="wroc-ikona">🔙</span> Wróć</button>
+            <div class="portfel-karta premium-gradient-yellow"><h3>Skarbiec Dziecka</h3><div class="liczba-punktow"><span id="sumaPunktow">0</span> ⭐</div></div>
+            <div class="card" id="sekcjaOczekujace" style="display: none; background-color: #fff8e1; border: 2px dashed #ff9800;"><h3 style="color: #f57c00;">⏳ Do sprawdzenia</h3><ul id="listaOczekujacych" class="lista-akcji"></ul></div>
+            <div class="card"><h3>📋 Baza Zadań</h3><ul id="listaZadan" class="lista-akcji"></ul><div class="dodaj-akcje-panel"><input type="text" id="noweZadanieNazwa" placeholder="Zadanie"><input type="number" id="noweZadaniePunkty" placeholder="Punkty"><button id="btnDodajZadanie" class="btn-akcja">➕ Dodaj</button></div></div>
+            <div class="card"><h3>🎁 Nagrody</h3><ul id="listaNagrod" class="lista-akcji"></ul><div class="dodaj-akcje-panel"><input type="text" id="nowaNagrodaNazwa" placeholder="Nagroda"><input type="number" id="nowaNagrodaKoszt" placeholder="Koszt"><button id="btnDodajNagrode" class="btn-akcja" style="background-color: #e83e8c;">➕ Dodaj</button></div></div>
+        </main>
+
+        <main id="ekranFinanse" class="ekran ukryty no-print">
+            <button id="btnWrocFinanse" class="btn-wroc"><span class="wroc-ikona">🔙</span> Wróć</button>
+            <div class="portfel-karta premium-gradient-green"><h3>Konto Oszczędnościowe (PLN)</h3><div class="liczba-punktow"><span id="sumaFinanse">0.00</span> zł</div></div>
+            <div class="card"><h3>💸 Zaksięguj transakcję</h3><input type="text" id="opisTransakcji" placeholder="Tytuł (np. Kieszonkowe)"><input type="number" id="kwotaTransakcji" placeholder="Kwota (zł)" step="0.01"><div class="przyciski-finanse"><button id="btnWplata" class="btn-akcja">➕ Wpłata</button><button id="btnWydatek" class="btn-danger" style="margin-top:0;">➖ Wydatek</button></div></div>
+            <div class="historia"><h3>Historia operacji:</h3><ul id="listaTransakcji"></ul></div>
+        </main>
+
+        <main id="ekranNotatki" class="ekran ukryty no-print">
+            <button id="btnWrocNotatki" class="btn-wroc"><span class="wroc-ikona">🔙</span> Wróć</button>
+            <div class="card"><h3>📝 Szybkie Notatki</h3><div class="dodaj-akcje-panel"><textarea id="nowaNotatkaTekst" placeholder="Zapisz listę zakupów, pomysły..." rows="3"></textarea><button id="btnDodajNotatke" class="btn-akcja" style="background-color: #ffc107; color: #856404;">📌 Przypnij karteczkę</button></div></div>
+            <div class="historia"><ul id="listaNotatek" style="display: flex; flex-direction: column; gap: 10px;"></ul></div>
+        </main>
+
+        <main id="ekranKalendarz" class="ekran ukryty no-print">
+            <div id="kalendarzDarmowy">
+                <div class="card">
+                    <h3>Dodaj wydarzenie</h3>
+                    <div class="dodaj-akcje-panel">
+                        <input type="text" id="noweWydarzenieTytul" placeholder="Np. Dentysta">
+                        <div style="display: flex; gap: 10px; margin-top: 5px;">
+                            <input type="date" id="noweWydarzenieData" style="flex: 2;">
+                            <input type="time" id="noweWydarzenieCzas" style="flex: 1;">
+                        </div>
+                        <button id="btnDodajWydarzenie" class="btn-akcja" style="background-color: #17a2b8;">➕ Zapisz</button>
+                    </div>
+                </div>
+                <div class="premium-banner" id="banerKalendarzPremium" style="margin-top: 20px;">
+                    <div class="premium-banner-ikona">🌟</div>
+                    <div class="premium-banner-tekst">
+                        <strong>Odblokuj Super Kalendarz!</strong>
+                        <span>Kategorie, priorytety i zaawansowane opcje</span>
+                    </div>
+                    <div class="premium-banner-strzalka">➤</div>
+                </div>
+            </div>
+
+            <div id="kalendarzPremium" class="ukryty">
+                <div class="card" style="border-top: 4px solid #8b5cf6; background: rgba(255, 255, 255, 0.98);">
+                    <h3 style="color: #8b5cf6;">👑 Zaawansowany Kalendarz</h3>
+                    <div class="dodaj-akcje-panel">
+                        <input type="text" id="noweWydarzenieTytulPremium" placeholder="Nazwa wydarzenia (np. Wizyta kontrolna)" style="font-weight: bold; border-color: #ddd6fe;">
+                        
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <select id="noweWydarzenieKategoria" style="flex: 1; font-weight: bold; color: #1e293b;">
+                                <option value="👨‍⚕️ Zdrowie">👨‍⚕️ Zdrowie</option>
+                                <option value="🏫 Edukacja">🏫 Edukacja</option>
+                                <option value="🎉 Zabawa">🎉 Zabawa</option>
+                                <option value="👨‍👩‍👧 Rodzina">👨‍👩‍👧 Rodzina</option>
+                            </select>
+                            <select id="noweWydarzeniePriorytet" style="flex: 1; font-weight: bold;">
+                                <option value="🟢 Normalny">🟢 Normalny</option>
+                                <option value="🟡 Ważny">🟡 Ważny</option>
+                                <option value="🔴 Pilny!">🔴 Pilny!</option>
+                            </select>
+                        </div>
+
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <input type="date" id="noweWydarzenieDataPremium" style="flex: 2;">
+                            <input type="time" id="noweWydarzenieCzasPremium" style="flex: 1;">
+                        </div>
+                        
+                        <textarea id="noweWydarzenieOpis" placeholder="Dodatkowe notatki / przypomnienia..." rows="2" style="margin-top: 10px; background-color: #f8fafc; border-radius: 12px;"></textarea>
+
+                        <button id="btnDodajWydarzeniePremium" class="btn-premium" style="margin-top: 15px;">➕ Zaplanuj wydarzenie</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="historia"><ul id="listaWydarzen" style="display: flex; flex-direction: column; gap: 10px;"></ul></div>
+        </main>
+
+        <main id="ekranKontakty" class="ekran ukryty no-print">
+            <button id="btnWrocKontakty" class="btn-wroc"><span class="wroc-ikona">🔙</span> Wróć</button>
+            <div class="card"><h3>📞 Ważne numery</h3><div class="dodaj-akcje-panel"><input type="text" id="nowyKontaktNazwa" placeholder="Kto? (np. Pediatra)"><input type="text" id="nowyKontaktNumer" placeholder="Numer"><button id="btnDodajKontakt" class="btn-akcja" style="background-color: #0d6efd;">➕ Dodaj kontakt</button></div></div>
+            <div class="historia"><ul id="listaKontaktow" style="display: flex; flex-direction: column; gap: 10px;"></ul></div>
+        </main>
+
+        <main id="ekranEkrany" class="ekran ukryty no-print">
+            <button id="btnWrocEkrany" class="btn-wroc"><span class="wroc-ikona">🔙</span> Wróć</button>
+            <div class="card">
+                <h3>💻 Cyfrowy Kontrakt</h3>
+                <p style="font-size: 13px; color: #666; margin-top:0;">Rejestruj czas na PC, Telefonie lub Konsoli i ucz dziecko zdrowych nawyków.</p>
+                <div class="dodaj-akcje-panel">
+                    <select id="nowyEkranUrzadzenie" style="border: 2px solid #cbd5e1; font-weight: bold;">
+                        <option value="📱 Telefon">📱 Telefon</option>
+                        <option value="💻 Komputer PC">💻 Komputer PC</option>
+                        <option value="🎮 Konsola">🎮 Konsola</option>
+                        <option value="📺 Telewizor">📺 Telewizor</option>
+                    </select>
+                    <select id="nowyEkranAkcja">
+                        <option value="▶️ Start (Rozpoczęto używanie)">▶️ Start (Rozpoczęto używanie)</option>
+                        <option value="🔄 Przejście na to urządzenie">🔄 Przejście na to urządzenie</option>
+                        <option value="🛑 Zdał sprzęt (Koniec ekranów)">🛑 Zdał sprzęt (Koniec ekranów)</option>
+                    </select>
+                    <input type="number" id="nowyEkranCzas" placeholder="Czas trwania (minuty) - opcjonalnie">
+                    <button id="btnDodajEkran" class="btn-akcja" style="background-color: #475569; margin-top: 15px;">💾 Zapisz status</button>
+                </div>
+            </div>
+            <div class="historia"><ul id="listaEkrany" style="display: flex; flex-direction: column; gap: 10px;"></ul></div>
+        </main>
+
+        <main id="ekranStoper" class="ekran ukryty no-print" style="text-align: center;">
+            <button id="btnWrocStoper" class="btn-wroc"><span class="wroc-ikona">🔙</span> Wróć</button>
+            <div class="card" style="padding: 40px 20px;">
+                <h3 style="color: #6f42c1;">⏳ Rodzinny Minutnik</h3>
+                <div id="wyswietlaczStopera" style="font-size: 70px; font-weight: 800; color: #2d3748; margin: 20px 0;">00:00</div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn-timer-szybki" data-czas="120">2 min</button>
+                    <button class="btn-timer-szybki" data-czas="300">5 min</button>
+                    <button class="btn-timer-szybki" data-czas="600">10 min</button>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <input type="number" id="stoperWlasnyCzas" placeholder="Minuty ręcznie..." style="flex: 2; margin-top: 0;">
+                    <button id="btnStoperWlasny" class="btn-akcja" style="background-color: #6f42c1; flex: 1;">▶️ Start</button>
+                </div>
+
+                <button id="btnStoperStop" class="btn-danger" style="font-size: 18px; padding: 15px; border-radius: 16px;">⏹️ STOP / RESET</button>
+            </div>
+        </main>
+
+        <main id="ekranRozmiary" class="ekran ukryty no-print">
+            <button id="btnWrocRozmiary" class="btn-wroc"><span class="wroc-ikona">🔙</span> Wróć</button>
+            <div class="card"><h3>👕 Aktualne Rozmiary</h3><div class="dodaj-akcje-panel"><input type="number" id="nowyRozmiarWzrost" placeholder="Wzrost (cm)"><input type="text" id="nowyRozmiarUbranie" placeholder="Ubranka (np. 104)"><input type="number" id="nowyRozmiarBut" placeholder="Rozmiar Buta (np. 27)"><button id="btnDodajRozmiar" class="btn-akcja" style="background-color: #20c997;">💾 Zapisz pomiar</button></div></div>
+            <div class="historia"><ul id="listaRozmiarow" style="display: flex; flex-direction: column; gap: 10px;"></ul></div>
+        </main>
+
+        <main id="ekranCytaty" class="ekran ukryty no-print">
+            <button id="btnWrocCytaty" class="btn-wroc"><span class="wroc-ikona">🔙</span> Wróć</button>
+            <div class="card"><h3>💬 Złote Myśli</h3><div class="dodaj-akcje-panel"><textarea id="nowyCytatTekst" placeholder='"Mamo, czy słońce..."' rows="3"></textarea><button id="btnDodajCytat" class="btn-akcja" style="background-color: #fd7e14;">📖 Dodaj do pamiętnika</button></div></div>
+            <div class="historia"><ul id="listaCytatow" style="display: flex; flex-direction: column; gap: 15px;"></ul></div>
+        </main>
+
+        <main id="ekranPlan" class="ekran ukryty no-print">
+            <button id="btnWrocPlan" class="btn-wroc"><span class="wroc-ikona">🔙</span> Wróć</button>
+            <div class="card"><h3>📚 Plan Zajęć</h3><div class="dodaj-akcje-panel"><select id="nowyPlanDzien"><option value="Poniedziałek">Poniedziałek</option><option value="Wtorek">Wtorek</option><option value="Środa">Środa</option><option value="Czwartek">Czwartek</option><option value="Piątek">Piątek</option><option value="Sobota">Sobota</option><option value="Niedziela">Niedziela</option></select><input type="time" id="nowyPlanCzas"><input type="text" id="nowyPlanNazwa" placeholder="Zajęcia (np. Basen)"><button id="btnDodajPlan" class="btn-akcja" style="background-color: #673ab7;">➕ Dodaj</button></div></div>
+            <div class="historia"><ul id="listaPlan" style="display: flex; flex-direction: column; gap: 10px;"></ul></div>
+        </main>
+
+        <main id="ekranPosilki" class="ekran ukryty no-print">
+            <button id="btnWrocPosilki" class="btn-wroc"><span class="wroc-ikona">🔙</span> Wróć</button>
+            <div class="card"><h3>🍴 Jadłospis</h3><div class="dodaj-akcje-panel"><select id="nowyPosilekDzien"><option value="Poniedziałek">Poniedziałek</option><option value="Wtorek">Wtorek</option><option value="Środa">Środa</option><option value="Czwartek">Czwartek</option><option value="Piątek">Piątek</option><option value="Sobota">Sobota</option><option value="Niedziela">Niedziela</option></select><select id="nowyPosilekTyp"><option value="Śniadanie">Śniadanie</option><option value="Obiad">Obiad</option><option value="Kolacja">Kolacja</option><option value="Przekąska">Przekąska</option></select><input type="text" id="nowyPosilekNazwa" placeholder="Co jemy?"><button id="btnDodajPosilek" class="btn-akcja" style="background-color: #8bc34a;">➕ Dodaj posiłek</button></div></div>
+            <div class="historia"><ul id="listaPosilki" style="display: flex; flex-direction: column; gap: 10px;"></ul></div>
+        </main>
+
+        <main id="ekranPakowanie" class="ekran ukryty no-print">
+            <button id="btnWrocPakowanie" class="btn-wroc"><span class="wroc-ikona">🔙</span> Wróć</button>
+            <div class="card"><h3>🧳 Lista Wyjazdowa</h3><div class="dodaj-akcje-panel" style="display: flex; gap: 10px;"><input type="text" id="nowaRzeczPakowanie" placeholder="Np. Pampersy..." style="margin-top: 0; flex: 2;"><button id="btnDodajRzeczPakowanie" class="btn-akcja" style="background-color: #00838f; margin-top: 0; flex: 1;">➕ Dodaj</button></div></div>
+            <div class="historia"><button id="btnWyczyscPakowanie" class="btn-danger" style="margin-bottom: 15px; background-color: #64748b;">🧹 Odznacz wszystkie</button><ul id="listaPakowanie" style="display: flex; flex-direction: column; gap: 8px;"></ul></div>
+        </main>
+
+        <main id="ekranOsiagniecia" class="ekran ukryty no-print">
+            <button id="btnWrocOsiagniecia" class="btn-wroc"><span class="wroc-ikona">🔙</span> Wróć</button>
+            <div class="card"><h3>🏆 Pierwsze Razy</h3><div class="dodaj-akcje-panel"><input type="text" id="nowySukcesNazwa" placeholder="Np. Pierwszy ząbek"><input type="date" id="nowySukcesData"><button id="btnDodajSukces" class="btn-akcja" style="background-color: #fbc02d; color: #333;">🌟 Dodaj sukces</button></div></div>
+            <div class="historia"><ul id="listaOsiagniecia" style="display: flex; flex-direction: column; gap: 10px;"></ul></div>
+        </main>
+
+        <main id="ekranSejf" class="ekran ukryty no-print">
+            <button id="btnWrocSejf" class="btn-wroc"><span class="wroc-ikona">🔙</span> Zamknij Sejf</button>
+            <div class="card">
+                <h3 style="color: #455a64;">🗂️ Tajne Dokumenty</h3>
+                <div class="dodaj-akcje-panel">
+                    <select id="nowySejfKategoria">
+                        <option value="PESEL">PESEL</option>
+                        <option value="Akt Urodzenia">Akt Urodzenia</option>
+                        <option value="Książeczka Zdrowia">Książeczka Zdrowia</option>
+                        <option value="Zaświadczenie Lek.">Zaświadczenie Lekarskie</option>
+                        <option value="Historia Choroby">Historia Choroby</option>
+                        <option value="Wyniki Badań">Wyniki Badań</option>
+                        <option value="Grupa Krwi">Grupa Krwi</option>
+                        <option value="Inne / Notatka">Inne / Notatka</option>
+                    </select>
+                    <input type="text" id="nowySejfWartosc" placeholder="Wpisz dane (np. numer, uwagi)">
+                    
+                    <label for="nowySejfPlik" class="btn-akcja" style="background-color: #94a3b8; display: block; text-align: center; margin-top: 10px; cursor: pointer;">📷 Zrób zdjęcie / Dodaj skan</label>
+                    <input type="file" id="nowySejfPlik" accept="image/*" capture="environment" style="display: none;">
+                    <div id="podgladSejfPliku" style="margin-top: 10px; font-size: 13px; font-weight: 800; color: #10b981; text-align: center;"></div>
+
+                    <button id="btnDodajSejf" class="btn-akcja" style="background-color: #455a64; margin-top: 10px;">🔒 Zabezpiecz w Sejfie</button>
+                </div>
+            </div>
+            <div class="historia"><ul id="listaSejf" style="display: flex; flex-direction: column; gap: 10px;"></ul></div>
+        </main>
+
+        <main id="ekranDziecka" class="ekran ukryty no-print" style="background: transparent;">
+            <div class="portfel-karta premium-gradient-yellow" style="margin: 15px;"><h3 style="font-size: 14px; opacity: 0.9;">Zebrane Punkty</h3><div class="liczba-punktow" style="font-size: 35px;"><span id="sumaPunktowDziecko">0</span> ⭐</div></div>
+            <div class="portfel-karta premium-gradient-green" style="margin: 15px;"><h3 style="font-size: 14px; opacity: 0.9;">Prawdziwe Oszczędności</h3><div class="liczba-punktow" style="font-size: 35px;"><span id="sumaFinanseDziecko">0.00</span> zł</div></div>
+            <div class="card" style="margin: 15px;"><h3 style="color: #28a745;">📋 Do zrobienia:</h3><ul id="listaZadanDziecko" class="lista-akcji"></ul></div>
+            <div class="card" style="margin: 15px;"><h3 style="color: #e83e8c;">🎁 Nagrody:</h3><ul id="listaNagrodDziecko" class="lista-akcji"></ul></div>
+            <div style="padding: 20px;"><button id="btnWyjscieDziecko" class="btn-danger" style="width: 100%; border-radius: 16px; padding: 15px;">🔒 Zakończ zabawę (PIN)</button></div>
+        </main>
+
+        <main id="ekranAsystent" class="ekran ukryty no-print">
+            <button id="btnWrocAsystent" class="btn-wroc"><span class="wroc-ikona">🔙</span> Wróć</button>
+            <div class="powitanie" style="padding-top: 5px;">
+                <h2 style="color: #8e24aa;">Asystent D@niel 🤖</h2>
+                <p style="margin-top: 0; font-size: 13px;">Piszesz jako: <strong id="mojPseudonimCzatu" style="color: #8e24aa;">Rodzic</strong></p>
+            </div>
+            <div id="kontenerWiadomosci" class="chat-container"></div>
+            <div class="chat-szybkie-akcje" id="szybkieAkcjeCzatu">
+                <button class="btn-szybka-akcja">Zapisz karmienie 🍼</button>
+                <button class="btn-szybka-akcja">Wydałem 15 zł na lody 💸</button>
+                <button class="btn-szybka-akcja">Młody zdał konsolę 🛑</button>
+                <button class="btn-szybka-akcja">Oblicz dawkę leku 🩺</button>
+                <button class="btn-szybka-akcja">Opowiedz żart 😂</button>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="inputWiadomosci" placeholder="Zapytaj Asystenta D@niela...">
+                <button id="btnWyslijWiadomosc" class="btn-wyslij-czat" style="background-color: #8e24aa;">➤</button>
+            </div>
+        </main>
+
+        <main id="ekranProfil" class="ekran ukryty no-print">
+            <div class="card">
+                <h3>Mój Skarb 💛</h3>
+                
+                <select id="wyborDziecka" style="margin-bottom: 15px; font-weight: 800; color: #8e24aa; border: 2px solid #e1bee7;"></select>
+                <button id="btnDodajDziecko" class="btn-premium" style="margin-bottom: 15px; font-size: 13px; padding: 12px;">➕ Dodaj kolejne dziecko (Premium)</button>
+                
+                <label>Imię dziecka:</label><input type="text" id="imieDziecka" placeholder="Np. Olaf (Wymagane!)">
+                <label>Waga (kg):</label><input type="number" id="wagaDziecka" step="0.1" placeholder="Wymagane do kalkulatora leków">
+                <label>Alergie i uczulenia:</label><textarea id="alergieDziecka" rows="3"></textarea>
+                <button id="btnZapiszProfil" class="btn-akcja" style="margin-top: 15px;">💾 Zapisz dane profilu</button>
+            </div>
+            
+            <div class="card" style="margin-top: 15px;">
+                <h3 style="color: #dc3545;">🔒 Bezpieczeństwo</h3>
+                <p style="font-size: 13px; color: #666; margin-top: 0; margin-bottom: 15px;">Zmiana kodu PIN (Domyślnie na start to: 1234)</p>
+                <input type="password" id="inputStaryPin" placeholder="Wpisz obecny PIN" style="text-align: center; font-weight: bold; margin-bottom: 10px;">
+                <input type="password" id="inputNowyPin" placeholder="Wymyśl nowy PIN" style="text-align: center; letter-spacing: 5px; font-weight: bold; font-size: 20px;">
+                <button id="btnZapiszPin" class="btn-danger" style="margin-top: 15px;">💾 Zmień PIN</button>
+            </div>
+            
+            <div class="card" style="margin-top: 15px; border-left: 5px solid #8b5cf6; background-color: #f5f3ff;">
+                <h3 style="color: #8b5cf6;">🖨️ Eksport Danych (Premium)</h3>
+                <p style="font-size: 13px; color: #666; margin-top: 0; margin-bottom: 15px;">Pobierz całą bazę aktywnego dziecka do pliku PDF.</p>
+                <button id="btnEksportPDF" class="btn-premium">Generuj Raport PDF</button>
+            </div>
+            <br><br>
+        </main>
+
+        <main id="ekranPremium" class="ekran ukryty no-print" style="background-color: #f8fafc; min-height: 100vh;">
+            <button id="btnWrocPremium" class="btn-wroc" style="background: transparent;"><span class="wroc-ikona">🔙</span> Wróć</button>
+            <div class="powitanie" style="text-align: center; padding-top: 0;">
+                <h2 style="font-size: 26px;">Wybierz swój plan</h2>
+                <p style="color: #64748b;">Dopasuj Rodzicownika do swoich potrzeb.</p>
+            </div>
+
+            <div class="pricing-card">
+                <h3>Standard</h3>
+                <div class="price">0 zł</div>
+                <ul class="pricing-list">
+                    <li><span class="check">✔️</span> Dostęp do 14 modułów</li>
+                    <li><span class="check">✔️</span> Planer, Apteczka, Karmienie</li>
+                    <li class="limited"><span class="cross">❌</span> Reklamy w aplikacji</li>
+                    <li class="limited"><span class="cross">❌</span> Profile Dzieci: Tylko 1</li>
+                    <li class="limited"><span class="cross">❌</span> Asystent D@niel (Tylko czat)</li>
+                </ul>
+                <button class="btn-pricing btn-pricing-outline">Twój obecny plan</button>
+            </div>
+
+            <div class="pricing-card pricing-card-premium">
+                <div class="bestseller-badge">BESTSELLER</div>
+                <h3 style="color: #fbbf24;">Premium</h3>
+                <div class="price" style="color: white;">19 zł <span class="price-sub" style="color: #94a3b8;">/ na zawsze</span></div>
+                <ul class="pricing-list" style="color: #e2e8f0;">
+                    <li><span class="check">✔️</span> <strong>Pełny Asystent D@niel</strong></li>
+                    <li><span class="check">✔️</span> <strong>Nielimitowane profile dzieci</strong></li>
+                    <li><span class="check">✔️</span> <strong>Sejf na dokumenty (Skaner)</strong></li>
+                    <li><span class="check">✔️</span> <strong>Eksport bazy do PDF</strong></li>
+                    <li><span class="check">✔️</span> <strong>Całkowity brak reklam!</strong></li>
+                </ul>
+                <button class="btn-pricing btn-pricing-gradient" id="btnKupPremium">Kup Pełną Wersję</button>
+            </div>
+            <br><br>
+        </main>
+
+        <main id="ekranBlik" class="ekran ukryty no-print" style="background-color: #f8fafc; text-align: center; min-height: 100vh;">
+            <button id="btnWrocBlik" class="btn-wroc" style="background: transparent;"><span class="wroc-ikona">🔙</span> Wróć</button>
+            <div style="padding: 20px;">
+                <div style="background: black; color: white; display: inline-block; padding: 10px 20px; font-weight: 900; font-size: 24px; border-radius: 8px; letter-spacing: 2px; margin-bottom: 20px;">BLIK</div>
+                <h2 style="font-size: 22px; color: #1e293b; margin-top: 0;">Odblokuj Premium</h2>
+                <div style="background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin: 0 0 20px 0; border: 2px dashed #cbd5e1; text-align: left;">
+                    <p style="margin-top: 0; font-weight: bold; color: #1e293b;">Krok 1: Wyślij przelew BLIK</p>
+                    <p style="font-size: 14px; color: #64748b; margin-bottom: 15px;">Wyślij <strong>19 PLN</strong> na poniższy numer telefonu. <strong>W tytule przelewu wpisz swój własny numer telefonu!</strong></p>
+                    <span style="font-size: 32px; font-weight: 900; color: #e11d48; letter-spacing: 2px; display: block; text-align: center;">577 610 376</span>
+                    <span style="display: block; font-size: 14px; color: #475569; margin-top: 10px; text-align: center;">Odbiorca: Daniel Ćw.</span>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin: 0 0 30px 0; border: 2px solid #8b5cf6; text-align: left;">
+                    <p style="margin-top: 0; font-weight: bold; color: #8b5cf6;">Krok 2: Kod Aktywacyjny</p>
+                    <p style="font-size: 14px; color: #64748b; margin-bottom: 15px;">Gdy otrzymam wpłatę, odeślę Ci SMS-em jednorazowy kod. Wpisz go tutaj:</p>
+                    <input type="text" id="inputKodAktywacyjny" placeholder="Wpisz kod..." style="text-align: center; font-weight: bold; letter-spacing: 2px; font-size: 18px; text-transform: uppercase; background-color: #f5f3ff; border: 1px solid #ddd6fe;">
+                    <button id="btnAktywujPremium" class="btn-premium" style="margin-top: 15px;">🚀 Aktywuj Premium</button>
+                </div>
+            </div>
+            <br><br><br>
+        </main>
+
+        <nav id="pasekDolny" class="bottom-nav no-print">
+            <button id="navStart" class="nav-btn aktywny"><div class="nav-icon">🏠</div><span>Pulpit</span></button>
+            <button id="navKalendarz" class="nav-btn"><div class="nav-icon">📅</div><span>Kalendarz</span></button>
+            <button id="navProfil" class="nav-btn"><div class="nav-icon">👤</div><span>Profil</span></button>
+        </nav>
+    </div>
+    <script src="script.js"></script>
+    <script src="script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Service Worker zarejestrowany!', reg))
+                .catch(err => console.log('Błąd rejestracji Service Workera', err));
+            });
+        }
+    </script>
+</body>
+</html>
+</body>
+</html>

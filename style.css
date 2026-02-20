@@ -1,0 +1,231 @@
+/* ========================================== */
+/* NOWOCZESNY DESIGN: RODZICOWNIK (GLASS UI 2.0) */
+/* ========================================== */
+
+* { box-sizing: border-box; font-family: 'Nunito', sans-serif; }
+
+body { 
+    background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+    background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1080&auto=format&fit=crop');
+    background-size: cover; background-position: center; background-attachment: fixed;
+    display: flex; justify-content: center; margin: 0; min-height: 100vh; color: #2d3748;
+}
+
+.app-container { 
+    background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    width: 100%; max-width: 420px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); 
+    display: flex; flex-direction: column; position: relative; 
+    padding-bottom: 0px; 
+    min-height: 100vh;
+}
+
+header { background: rgba(255, 255, 255, 0.85); color: #1e293b; padding: 20px 15px; border-bottom: 1px solid rgba(255,255,255,0.5); }
+header h1 { margin: 0 0 0 25px; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;}
+
+.powitanie { padding: 30px 20px 10px 20px; text-align: center; position: relative; } 
+.badge-mowi {
+    position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg, #3b82f6, #0ea5e9); color: white;
+    font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+    padding: 5px 16px; border-radius: 20px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+.powitanie h2 { margin: 0; font-size: 24px; font-weight: 800; color: #1e293b; } 
+.powitanie p { color: #475569; margin-top: 5px; font-size: 15px; font-weight: 600;}
+
+/* SYSTEM REKLAMOWY */
+.ad-banner {
+    background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 12px;
+    margin: 15px 20px; position: relative; overflow: hidden;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 80px; text-align: center; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
+}
+.ad-label { position: absolute; top: 0; left: 0; background: #cbd5e1; color: white; font-size: 9px; padding: 3px 8px; border-bottom-right-radius: 8px; font-weight: 900; text-transform: uppercase; }
+
+/* BANER PREMIUM */
+.premium-banner {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    background: linear-gradient(to right, #ffffff, #fef3c7);
+    margin: 10px 20px; padding: 15px 20px; border-radius: 16px;
+    cursor: pointer; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.15);
+    border: 1px solid #fde68a; transition: transform 0.2s;
+}
+.premium-banner:hover { transform: translateY(-3px); }
+.premium-banner-ikona { font-size: 26px; }
+.premium-banner-tekst { flex-grow: 1; display: flex; flex-direction: column; text-align: left;}
+.premium-banner-tekst strong { color: #b45309; font-size: 14px; font-weight: 800; line-height: 1.2; }
+.premium-banner-tekst span { font-size: 11px; color: #64748b; font-weight: 600; margin-top: 2px;}
+.premium-banner-strzalka { color: #d97706; font-weight: 800; font-size: 18px; }
+
+/* NOTA PRAWNA */
+.nota-prawna { margin: 20px; padding: 15px; background: rgba(255, 255, 255, 0.6); border-radius: 12px; text-align: center; font-size: 10px; color: #64748b; }
+.nota-prawna strong { color: #475569; display: block; margin-bottom: 5px; font-size: 11px;}
+
+/* SEKCJE KAFELKÓW NA PULPICIE */
+.dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px 20px 20px; }
+.grid-sekcja {
+    grid-column: span 2; font-size: 13px; font-weight: 800; color: #475569;
+    margin-top: 15px; margin-bottom: -5px; padding-left: 5px; text-transform: uppercase;
+    letter-spacing: 1px; border-bottom: 2px dashed rgba(255,255,255,0.6); padding-bottom: 5px;
+}
+.grid-sekcja:first-child { margin-top: 5px; }
+
+/* KAFELKI */
+.kafelek { 
+    background: rgba(255, 255, 255, 0.85); border-radius: 24px; padding: 20px 5px; 
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.7);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04);
+}
+.kafelek:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08); background: rgba(255, 255, 255, 0.95); }
+.ikona-wrapper { width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+.kafelek span { font-weight: 800; color: #1e293b; font-size: 13px; text-align: center;}
+.kafelek-szeroki { flex-direction: row; justify-content: flex-start; padding: 15px 20px; }
+
+/* KARTY I FORMULARZE */
+.card { background: rgba(255, 255, 255, 0.95); border-radius: 24px; padding: 25px; margin: 15px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); } 
+.card h3 { margin-top: 0; margin-bottom: 15px; color: #1e293b; font-weight: 800; font-size: 18px; text-align: center; } 
+label { display: block; margin-top: 15px; margin-bottom: 8px; color: #475569; font-weight: 700; font-size: 14px;}
+select, input, textarea { width: 100%; padding: 14px 16px; margin-top: 5px; background-color: #f1f5f9; border: 1px solid transparent; border-radius: 12px; font-size: 15px; color: #334155; font-weight: 600; transition: all 0.2s ease; }
+select:focus, input:focus, textarea:focus { outline: none; border-color: #3b82f6; background-color: #ffffff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+textarea { resize: vertical; }
+
+/* PRZYCISKI */
+.btn-akcja { width: 100%; background-color: #10b981; color: white; border: none; padding: 16px; border-radius: 14px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2); }
+.btn-akcja:hover { background-color: #059669; transform: translateY(-2px); }
+.btn-premium { width: 100%; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; padding: 16px; border-radius: 14px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); transition: 0.2s; }
+.btn-premium:hover { opacity: 0.9; transform: translateY(-2px); }
+.btn-danger { width: 100%; background-color: #ef4444; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);}
+.btn-wroc { background: none; border: none; color: #64748b; padding: 20px 20px 5px 20px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;}
+.wroc-ikona { font-size: 18px; }
+
+/* PANELE WEWNĘTRZNE */
+.dodaj-akcje-panel { background-color: transparent; padding: 5px 0; } 
+.info-tekst { font-size: 13px; color: #1e40af; background-color: #dbeafe; padding: 15px; border-radius: 12px; margin-bottom: 15px; font-weight: 600; text-align: center; border: 1px solid #bfdbfe;}
+.notatki-lekarz-card { background-color: #fffbeb; } #notatkiLekarz { background-color: #fef3c7; }
+.historia { padding: 0 20px 20px 20px; flex-grow: 1; overflow-y: auto; }
+.historia h3 { color: #64748b; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;}
+ul { list-style: none; padding: 0; margin: 0; }
+li { background: rgba(255,255,255,0.95); padding: 16px; margin-bottom: 12px; border-radius: 16px; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.wpis-lek { border-left: 5px solid #3b82f6; } .wpis-temp { border-left: 5px solid #ef4444; } 
+.ostrzezenie { background-color: #fef3c7; color: #b45309; padding: 15px 20px; font-weight: 700; text-align: center; font-size: 14px; margin: 0 20px; border-radius: 16px;}
+.ukryty { display: none !important; }
+
+/* ========================================== */
+/* NAPRAWIONE MENU DOLNE (Zawsze trzyma się dna, odporne na scroll) */
+/* ========================================== */
+.bottom-nav { 
+    position: sticky; 
+    bottom: 0; 
+    width: 100%; 
+    background: rgba(255, 255, 255, 0.85); 
+    backdrop-filter: blur(15px); 
+    -webkit-backdrop-filter: blur(15px); 
+    display: flex; 
+    border-top: 1px solid rgba(255,255,255,0.5); 
+    padding-bottom: max(10px, env(safe-area-inset-bottom)); 
+    z-index: 9999;
+    margin-top: auto; 
+}
+.nav-btn { flex: 1; background: none; border: none; padding: 12px 0; cursor: pointer; color: #94a3b8; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: 0.2s;} 
+.nav-icon { font-size: 22px; margin-bottom: 2px;} 
+.nav-btn span { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;}
+.nav-btn.aktywny { color: #3b82f6; }
+
+/* KARTY PORTFELA */
+.premium-gradient-yellow { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; padding: 25px; border-radius: 24px; text-align: center; margin: 15px 20px; box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2); border: 1px solid rgba(255,255,255,0.2); }
+.premium-gradient-green { background: linear-gradient(135deg, #34d399, #10b981); color: white; padding: 25px; border-radius: 24px; text-align: center; margin: 15px 20px; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2); border: 1px solid rgba(255,255,255,0.2); }
+.portfel-karta h3 { margin: 0; font-size: 15px; opacity: 0.9; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; text-align: center;} 
+.liczba-punktow { font-size: 48px; font-weight: 800; margin-top: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+/* Listy zadań i elementów */
+.lista-akcji li { display: flex; justify-content: space-between; align-items: center; border: 1px solid #f1f5f9;}
+.akcja-info { flex-grow: 1; } .akcja-nazwa { display: block; font-weight: 800; color: #1e293b; font-size: 15px; margin-bottom: 3px;} .akcja-punkty { font-size: 14px; font-weight: 800; color: #10b981; background: #ecfdf5; padding: 4px 8px; border-radius: 8px;} .akcja-koszt { color: #e83e8c; background: #fdf2f8;}
+.btn-wykonaj, .btn-kup { border: none; border-radius: 10px; padding: 10px 16px; font-weight: 800; color: white; cursor: pointer; font-size: 13px; }
+.btn-wykonaj { background-color: #10b981; margin-right: 5px; } .btn-kup { background-color: #ec4899; margin-right: 5px; }
+.btn-usun { background: #f1f5f9; border: none; cursor: pointer; font-size: 16px; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: 0.2s;} .btn-usun:hover { background: #fee2e2; }
+
+/* Inne elementy */
+.przyciski-finanse { display: flex; gap: 10px; margin-top: 15px; } .przyciski-finanse button { flex: 1; padding: 14px; font-size: 15px; }
+.transakcja-plus { color: #10b981; font-weight: 800; background: #ecfdf5; padding: 4px 8px; border-radius: 8px;} .transakcja-minus { color: #ef4444; font-weight: 800; background: #fef2f2; padding: 4px 8px; border-radius: 8px;}
+.notatka-element { background-color: #fef9c3; padding: 20px; border-radius: 16px; display: flex; justify-content: space-between; align-items: flex-start; }
+.kontakt-element { background-color: #eff6ff; padding: 20px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; }
+.notatka-tekst { flex-grow: 1; white-space: pre-wrap; font-size: 15px; font-weight: 700; color: #334155; line-height: 1.5; }
+.wydarzenie-element { display: flex; align-items: center; padding: 15px;}
+.wydarzenie-data { background-color: #eff6ff; color: #3b82f6; padding: 12px; border-radius: 14px; text-align: center; min-width: 75px; margin-right: 15px; font-weight: 800; }
+.wydarzenie-data span { display: block; font-size: 26px; line-height: 1; margin-top: 2px;} .wydarzenie-data small { font-size: 12px; text-transform: uppercase; font-weight: 800; opacity: 0.8;}
+.wydarzenie-info { flex-grow: 1; } .wydarzenie-tytul { font-weight: 800; color: #1e293b; font-size: 16px; display: block;} .wydarzenie-czas { color: #64748b; font-size: 13px; font-weight: 600;}
+.btn-timer-szybki { background-color: rgba(255,255,255,0.8); color: #475569; border: 2px solid #e2e8f0; padding: 15px; border-radius: 14px; font-weight: 800; cursor: pointer; font-size: 16px; transition: 0.2s; }
+.btn-timer-szybki:hover { background-color: #e2e8f0; }
+.rozmiar-element { background-color: #f0fdf4; padding: 20px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; }
+.rozmiar-detale span { display: inline-block; background: white; padding: 6px 12px; border-radius: 8px; margin-right: 5px; font-weight: 800; font-size: 13px; color: #059669; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
+.cytat-element { background-color: #fffbeb; border-radius: 20px 20px 20px 0; padding: 20px; position: relative; display: flex; justify-content: space-between; align-items: flex-start; margin-left: 10px; }
+.plan-element { background-color: #f5f3ff; padding: 20px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; }
+.plan-dzien { color: #7c3aed; font-weight: 800; font-size: 12px; text-transform: uppercase; margin-bottom: 4px; display: block;}
+.posilek-element { background-color: #f7fee7; padding: 20px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; }
+.posilek-dzien { color: #65a30d; font-weight: 800; font-size: 12px; text-transform: uppercase; margin-bottom: 4px; display: block;}
+
+/* SEJF */
+.sejf-element { background-color: #f8fafc; padding: 20px; border-radius: 16px; display: flex; align-items: flex-start; border: 1px solid #e2e8f0;}
+.sejf-wartosc { display: block; font-family: monospace; font-size: 18px; color: #0f172a; background: #e2e8f0; padding: 8px 12px; border-radius: 8px; margin-top: 8px; letter-spacing: 2px; font-weight: bold;}
+
+.pakowanie-element { background-color: white; border-left: 5px solid #00838f; padding: 15px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s;}
+.pakowanie-tekst { font-size: 16px; font-weight: 700; color: #1e293b; flex-grow: 1; transition: 0.2s;}
+.pakowanie-zrobione { background-color: #f1f5f9; border-left-color: #94a3b8; opacity: 0.6; }
+.pakowanie-zrobione .pakowanie-tekst { text-decoration: line-through; color: #94a3b8; }
+.pakowanie-checkbox { width: 26px; height: 26px; border-radius: 6px; border: 2px solid #cbd5e1; margin-right: 15px; display: flex; align-items: center; justify-content: center; color: transparent; font-weight: bold; transition: 0.2s; background: white;}
+.pakowanie-zrobione .pakowanie-checkbox { background-color: #10b981; border-color: #10b981; color: white; }
+.osiagniecie-element { background-color: #fffde7; border-left: 5px solid #fbc02d; padding: 20px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden;}
+.osiagniecie-ikona { font-size: 30px; margin-right: 15px; opacity: 0.8; }
+.osiagniecie-info { flex-grow: 1; z-index: 2;}
+.osiagniecie-tytul { display: block; font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 5px;}
+.osiagniecie-data { display: inline-block; background: #fff9c4; color: #f57f17; font-weight: 800; font-size: 12px; padding: 4px 10px; border-radius: 12px;}
+
+/* ASYSTENT D@NIEL I CZAT */
+.chat-container { background: rgba(255, 255, 255, 0.6); border-radius: 20px; margin: 10px 15px; height: 380px; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02); border: 1px solid rgba(255,255,255,0.8); }
+.dymek-czatu { max-width: 85%; display: flex; flex-direction: column; animation: fadeIn 0.3s ease-out;}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.dymek-moj { align-self: flex-end; } .dymek-inny { align-self: flex-start; }
+.czat-autor { font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 4px; padding: 0 5px;}
+.dymek-moj .czat-autor { text-align: right; color: #8e24aa;}
+.czat-tresc { padding: 12px 16px; font-size: 14px; font-weight: 600; line-height: 1.4; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.dymek-moj .czat-tresc { background: linear-gradient(135deg, #ab47bc, #8e24aa); color: white; border-radius: 18px 18px 4px 18px; }
+.dymek-inny .czat-tresc { background: white; color: #334155; border-radius: 18px 18px 18px 4px; }
+.chat-szybkie-akcje { display: flex; gap: 8px; overflow-x: auto; padding: 0 15px 10px 15px; margin-top: 5px; scrollbar-width: none; }
+.chat-szybkie-akcje::-webkit-scrollbar { display: none; }
+.btn-szybka-akcja { background: rgba(255,255,255,0.8); color: #8e24aa; border: 1px solid #e1bee7; padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 800; white-space: nowrap; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s;}
+.btn-szybka-akcja:hover { background: #f3e5f5; transform: scale(1.05); }
+.chat-input-area { display: flex; gap: 10px; margin: 0 15px 20px 15px; background: white; padding: 5px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+.chat-input-area input { margin: 0; border: none; background: transparent; padding: 12px 15px; box-shadow: none; }
+.btn-wyslij-czat { background: #8e24aa; color: white; border: none; border-radius: 16px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
+.btn-wyslij-czat:hover { background: #6a1b9a; transform: scale(1.05); }
+.pisze-kropki { display: inline-block; font-weight: bold; letter-spacing: 2px; animation: blink 1.4s infinite both; }
+@keyframes blink { 0% { opacity: 0.2; } 20% { opacity: 1; } 100% { opacity: 0.2; } }
+.btn-google-search, .btn-wewnetrzny-link { display: inline-block; background-color: #f1f5f9; color: #3b82f6; border: 1px solid #cbd5e1; padding: 10px 15px; border-radius: 12px; font-size: 13px; font-weight: 800; text-decoration: none; margin-top: 10px; transition: all 0.2s ease; text-align: center; width: 100%; cursor: pointer;}
+.btn-wewnetrzny-link { background-color: #e0f2fe; border-color: #bfdbfe; color: #1d4ed8; }
+.btn-google-search:hover, .btn-wewnetrzny-link:hover { background-color: #dbeafe; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+
+/* CENNIK PREMIUM (PAYWALL) */
+.pricing-card { background: white; border-radius: 24px; padding: 30px 25px; margin: 15px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: relative; border: 1px solid #e2e8f0; }
+.pricing-card h3 { margin: 0 0 10px 0; font-size: 20px; font-weight: 800; color: #1e293b; text-align: left; }
+.pricing-card .price { font-size: 42px; font-weight: 800; color: #1e293b; margin-bottom: 20px; }
+.pricing-card .price-sub { font-size: 14px; font-weight: 600; color: #94a3b8; }
+.pricing-list { padding: 0; margin: 0 0 25px 0; list-style: none; }
+.pricing-list li { display: flex; align-items: center; margin-bottom: 12px; font-size: 15px; font-weight: 600; color: #475569; padding: 0; box-shadow: none; background: transparent;}
+.pricing-list .check { color: #10b981; margin-right: 10px; font-size: 16px; }
+.pricing-list .cross { color: #94a3b8; margin-right: 10px; font-size: 16px; }
+.pricing-list .limited { color: #94a3b8; }
+.btn-pricing { width: 100%; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; text-align: center; }
+.btn-pricing-outline { background: transparent; border: 2px solid #8b5cf6; color: #8b5cf6; }
+.btn-pricing-outline:hover { background: #f5f3ff; }
+.pricing-card-premium { background: #111827; border: none; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+.bestseller-badge { position: absolute; top: -12px; right: 20px; background: #fbbf24; color: #000; font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; }
+.btn-pricing-gradient { background: linear-gradient(to right, #ec4899, #8b5cf6); color: white; border: none; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4); }
+.btn-pricing-gradient:hover { opacity: 0.9; transform: translateY(-2px); }
+
+@media print {
+    body { background: white; padding: 0; } .app-container { max-width: 100%; box-shadow: none; padding-bottom: 0; background: white;}
+    .no-print { display: none !important; } .print-header { display: block !important; text-align: center; margin-bottom: 20px; }
+    .notatki-lekarz-card { border: 2px solid #ccc; background: white; } #notatkiLekarz { border: none; background: white; resize: none; overflow: hidden; min-height: 100px; }
+    .historia { background: white; padding: 0; } li { box-shadow: none; border: 1px solid #ccc; border-left: 5px solid #ccc; }
+    .wpis-temp { border-left-color: #000; } .wpis-lek { border-left-color: #666; }
+}
