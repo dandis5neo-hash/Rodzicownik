@@ -1,19 +1,52 @@
 document.addEventListener("DOMContentLoaded", function() {
     
     // ==========================================
-    // 0. BAZY DANYCH I SYSTEM PREMIUM + TRIAL
+    // 00. INICJALIZACJA FIREBASE
+    // ==========================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyAOzWpWSjJ9f0e4zX5ZU4YVN0mVFlgJkCk",
+        authDomain: "rodzicownik-26.firebaseapp.com",
+        databaseURL: "https://rodzicownik-26-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "rodzicownik-26",
+        storageBucket: "rodzicownik-26.firebasestorage.app",
+        messagingSenderId: "629922677051",
+        appId: "1:629922677051:web:53d77888cfe6ab46f6b71e"
+    };
+    
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const auth = firebase.auth();
+    const database = firebase.database();
+    
+    let currentUserUid = null;
+
+    // ==========================================
+    // 01. SILNIK SYNCHRONIZACJI Z CHMURĄ
+    // ==========================================
+    function zapiszWChmurze(klucz, dane) {
+        // 1. Zapis lokalny dla trybu offline
+        localStorage.setItem(klucz, typeof dane === 'object' ? JSON.stringify(dane) : dane);
+        // 2. Zapis w chmurze
+        if (currentUserUid) {
+            database.ref('users/' + currentUserUid + '/' + klucz).set(dane);
+        }
+    }
+
+    function usunZChmury(klucz) {
+        localStorage.removeItem(klucz);
+        if (currentUserUid) {
+            database.ref('users/' + currentUserUid + '/' + klucz).remove();
+        }
+    }
+
+    // ==========================================
+    // 0. BAZY DANYCH I SYSTEM PREMIUM
     // ==========================================
     const PULA_KODOW_PREMIUM = [
         "RDZ-A1B2", "RDZ-C3D4", "RDZ-E5F6", "RDZ-G7H8", "RDZ-I9J0", "RDZ-K1L2", "RDZ-M3N4", "RDZ-O5P6", "RDZ-Q7R8", "RDZ-S9T0",
         "RDZ-U1V2", "RDZ-W3X4", "RDZ-Y5Z6", "RDZ-A7B8", "RDZ-C9D0", "RDZ-E1F2", "RDZ-G3H4", "RDZ-I5J6", "RDZ-K7L8", "RDZ-M9N0",
-        "RDZ-O1P2", "RDZ-Q3R4", "RDZ-S5T6", "RDZ-U7V8", "RDZ-W9X0", "RDZ-Y1Z2", "RDZ-A3B4", "RDZ-C5D6", "RDZ-E7F8", "RDZ-G9H0",
-        "RDZ-I1J2", "RDZ-K3L4", "RDZ-M5N6", "RDZ-O7P8", "RDZ-Q9R0", "RDZ-S1T2", "RDZ-U3V4", "RDZ-W5X6", "RDZ-Y7Z8", "RDZ-A9B0",
-        "RDZ-C1D2", "RDZ-E3F4", "RDZ-G5H6", "RDZ-I7J8", "RDZ-K9L0", "RDZ-M1N2", "RDZ-O3P4", "RDZ-Q5R6", "RDZ-S7T8", "RDZ-U9V0",
-        "RDZ-W1X2", "RDZ-Y3Z4", "RDZ-A5B6", "RDZ-C7D8", "RDZ-E9F0", "RDZ-G1H2", "RDZ-I3J4", "RDZ-K5L6", "RDZ-M7N8", "RDZ-O9P0",
-        "RDZ-Q1R2", "RDZ-S3T4", "RDZ-U5V6", "RDZ-W7X8", "RDZ-Y9Z0", "RDZ-A1C3", "RDZ-B2D4", "RDZ-E5G7", "RDZ-F6H8", "RDZ-I9K1",
-        "RDZ-J0L2", "RDZ-M3O5", "RDZ-N4P6", "RDZ-Q7S9", "RDZ-R8T0", "RDZ-U1W3", "RDZ-V2X4", "RDZ-Y5A7", "RDZ-Z6B8", "RDZ-C9E1",
-        "RDZ-D0F2", "RDZ-G3I5", "RDZ-H4J6", "RDZ-K7M9", "RDZ-L8N0", "RDZ-O1Q3", "RDZ-P2R4", "RDZ-S5U7", "RDZ-T6V8", "RDZ-W9Y1",
-        "RDZ-X0Z2", "RDZ-A3C5", "RDZ-B4D6", "RDZ-E7G9", "RDZ-F8H0", "RDZ-I1K3", "RDZ-J2L4", "RDZ-M5O7", "RDZ-N6P8", "RDZ-Q9S1"
+        "RDZ-O1P2", "RDZ-Q3R4", "RDZ-S5T6", "RDZ-U7V8", "RDZ-W9X0", "RDZ-Y1Z2", "RDZ-A3B4", "RDZ-C5D6", "RDZ-E7F8", "RDZ-G9H0"
     ];
 
     let czyPremiumPelne = localStorage.getItem("rodzicownikPremium") === "true";
@@ -24,11 +57,9 @@ document.addEventListener("DOMContentLoaded", function() {
     if (!czyPremiumPelne && koniecTrialu > Date.now()) {
         czyTrial = true;
         let resztaGodzin = Math.floor((koniecTrialu - Date.now()) / (1000 * 60 * 60));
-        let dni = Math.floor(resztaGodzin / 24);
-        let godz = resztaGodzin % 24;
-        pozostaloTrialText = `${dni} dni i ${godz} godz.`;
+        pozostaloTrialText = `${Math.floor(resztaGodzin / 24)} dni i ${resztaGodzin % 24} godz.`;
     } else if (!czyPremiumPelne && koniecTrialu > 0 && koniecTrialu <= Date.now()) {
-        localStorage.removeItem("premiumTrialEnd");
+        usunZChmury("premiumTrialEnd");
         koniecTrialu = 0;
     }
     
@@ -36,42 +67,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
     let bazaProfili = JSON.parse(localStorage.getItem("medBazaProfili")) || [{ id: Date.now(), imie: "", waga: "", alergie: "" }];
     let aktywnyProfilId = localStorage.getItem("medAktywnyProfilId") || bazaProfili[0].id;
-
-    function odswiezWidokPulpitu() {
-        const baner = document.getElementById("banerPremiumPulpit"); 
-        const reklamy = document.querySelectorAll(".ad-banner");
-        const napisAsystent = document.getElementById("napisAsystentPulpit");
-        const napisSejf = document.getElementById("napisSejfPulpit");
-        
-        if (czyPremiumPelne) {
-            if(baner) baner.style.display = "none";
-            if(napisSejf) napisSejf.innerText = "Sejf Dokumentów";
-            if(napisAsystent) napisAsystent.innerText = "Asystent D@niel (Premium)";
-            reklamy.forEach(r => r.style.display = "none");
-            if(document.getElementById("kalendarzDarmowy")) document.getElementById("kalendarzDarmowy").classList.add("ukryty");
-            if(document.getElementById("kalendarzPremium")) document.getElementById("kalendarzPremium").classList.remove("ukryty");
-        } else if (czyTrial) {
-            if(baner) {
-                baner.style.display = "flex";
-                baner.innerHTML = `<div class="premium-banner-ikona">⏳</div><div class="premium-banner-tekst"><strong style="color:#10b981;">Wersja Próbna Premium</strong><span>Pozostało: ${pozostaloTrialText}</span></div><div class="premium-banner-strzalka">➤</div>`;
-            }
-            if(napisSejf) napisSejf.innerText = "Sejf Dokumentów";
-            if(napisAsystent) napisAsystent.innerText = "D@niel (Próbne Premium)";
-            reklamy.forEach(r => r.style.display = "none");
-            if(document.getElementById("kalendarzDarmowy")) document.getElementById("kalendarzDarmowy").classList.add("ukryty");
-            if(document.getElementById("kalendarzPremium")) document.getElementById("kalendarzPremium").classList.remove("ukryty");
-        } else {
-            if(baner) {
-                baner.style.display = "flex";
-                baner.innerHTML = `<div class="premium-banner-ikona">👑</div><div class="premium-banner-tekst"><strong>Odblokuj wersję Premium!</strong><span>Więcej profili, Kopia zapasowa, Sejf</span></div><div class="premium-banner-strzalka">➤</div>`;
-            }
-            if(napisAsystent) napisAsystent.innerText = "Asystent D@niel (Wersja Darmowa)";
-            reklamy.forEach(r => r.style.display = "flex");
-            if(document.getElementById("kalendarzDarmowy")) document.getElementById("kalendarzDarmowy").classList.remove("ukryty");
-            if(document.getElementById("kalendarzPremium")) document.getElementById("kalendarzPremium").classList.add("ukryty");
-        }
-    }
-
     let aktualnyPin = localStorage.getItem("rodzicPin") || "1234";
     let mojePunkty = parseInt(localStorage.getItem("gryPunkty")) || 0; 
     let bazaZadan = JSON.parse(localStorage.getItem("gryZadania")) || [{ id: 1, nazwa: "Pościelenie łóżka", punkty: 10 }]; 
@@ -98,19 +93,160 @@ document.addEventListener("DOMContentLoaded", function() {
     let bazaEkrany = JSON.parse(localStorage.getItem("narzedziaEkrany")) || [];
 
     // ==========================================
+    // LOGIKA AUTORYZACJI FIREBASE (AUTH STATE)
+    // ==========================================
+    const ekranLogowania = document.getElementById("ekranLogowania");
+    const pasekDolny = document.getElementById("pasekDolny");
+    const ekranStart = document.getElementById("ekranStart");
+
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            currentUserUid = user.uid;
+            console.log("Zalogowano! Synchronizacja z bazą Firebase...");
+            
+            // POBIERANIE DANYCH Z CHMURY
+            database.ref('users/' + currentUserUid).once('value').then(snapshot => {
+                const daneZChmury = snapshot.val();
+                if (daneZChmury) {
+                    // Nadpisujemy lokalne zmienne danymi z serwera
+                    if (daneZChmury.rodzicownikPremium) czyPremiumPelne = (daneZChmury.rodzicownikPremium === "true");
+                    czyPremium = czyPremiumPelne || czyTrial;
+                    if (daneZChmury.medBazaProfili) bazaProfili = daneZChmury.medBazaProfili;
+                    if (daneZChmury.medAktywnyProfilId) aktywnyProfilId = daneZChmury.medAktywnyProfilId;
+                    if (daneZChmury.rodzicPin) aktualnyPin = daneZChmury.rodzicPin;
+                    if (daneZChmury.gryPunkty) mojePunkty = parseInt(daneZChmury.gryPunkty);
+                    if (daneZChmury.grySaldo) saldoFinansow = parseFloat(daneZChmury.grySaldo);
+                    
+                    if (daneZChmury.medApteczka) mojaApteczka = daneZChmury.medApteczka;
+                    if (daneZChmury.medHistoria) bazaZdarzen = daneZChmury.medHistoria;
+                    if (daneZChmury.narzedziaKarmienie) bazaKarmienie = daneZChmury.narzedziaKarmienie;
+                    if (daneZChmury.narzedziaBilans) bazaBilans = daneZChmury.narzedziaBilans;
+                    if (daneZChmury.narzedziaSzczepienia) bazaSzczepien = daneZChmury.narzedziaSzczepienia;
+                    if (daneZChmury.gryOczekujace) oczekujaceZadania = daneZChmury.gryOczekujace;
+                    if (daneZChmury.gryZadania) bazaZadan = daneZChmury.gryZadania;
+                    if (daneZChmury.gryNagrody) bazaNagrod = daneZChmury.gryNagrody;
+                    if (daneZChmury.gryHistoriaFinansow) historiaFinansow = daneZChmury.gryHistoriaFinansow;
+                    if (daneZChmury.narzedziaNotatki) bazaNotatek = daneZChmury.narzedziaNotatki;
+                    if (daneZChmury.narzedziaKalendarz) bazaKalendarz = daneZChmury.narzedziaKalendarz;
+                    if (daneZChmury.narzedziaPakowanie) bazaPakowanie = daneZChmury.narzedziaPakowanie;
+                    if (daneZChmury.narzedziaOsiagniecia) bazaOsiagniecia = daneZChmury.narzedziaOsiagniecia;
+                    if (daneZChmury.narzedziaPlan) bazaPlan = daneZChmury.narzedziaPlan;
+                    if (daneZChmury.narzedziaPosilki) bazaPosilki = daneZChmury.narzedziaPosilki;
+                    if (daneZChmury.narzedziaSejf) bazaSejf = daneZChmury.narzedziaSejf;
+                    if (daneZChmury.narzedziaRozmiary) bazaRozmiary = daneZChmury.narzedziaRozmiary;
+                    if (daneZChmury.narzedziaCytaty) bazaCytaty = daneZChmury.narzedziaCytaty;
+                    if (daneZChmury.narzedziaKontakty) bazaKontaktow = daneZChmury.narzedziaKontakty;
+                    if (daneZChmury.narzedziaEkrany) bazaEkrany = daneZChmury.narzedziaEkrany;
+                    if (daneZChmury.narzedziaAsystent) bazaCzatu = daneZChmury.narzedziaAsystent;
+                    
+                    // Bezpieczna kopia w localStorage
+                    Object.keys(daneZChmury).forEach(key => {
+                        let v = daneZChmury[key];
+                        localStorage.setItem(key, typeof v === 'object' ? JSON.stringify(v) : v);
+                    });
+                    
+                    odswiezWszystkieWidoki();
+                } else {
+                    // Pierwsze logowanie konta -> Wypychamy obecne lokalne dane do chmury!
+                    zapiszLokalneDaneDoChmury();
+                }
+            });
+
+            wszystkieEkrany.forEach(e => { if(e) e.classList.add("ukryty"); });
+            ekranStart.classList.remove("ukryty");
+            pasekDolny.classList.remove("ukryty");
+            document.getElementById("tytulAplikacji").innerText = "Rodzicownik 📔💙";
+
+        } else {
+            currentUserUid = null;
+            wszystkieEkrany.forEach(e => { if(e) e.classList.add("ukryty"); });
+            ekranLogowania.classList.remove("ukryty");
+            pasekDolny.classList.add("ukryty");
+            document.getElementById("tytulAplikacji").innerText = "Logowanie";
+        }
+    });
+
+    function zapiszLokalneDaneDoChmury() {
+        if(!currentUserUid) return;
+        const updates = {};
+        if(czyPremiumPelne) updates['rodzicownikPremium'] = "true";
+        updates['rodzicPin'] = aktualnyPin;
+        updates['medBazaProfili'] = bazaProfili;
+        updates['medAktywnyProfilId'] = aktywnyProfilId;
+        updates['medApteczka'] = mojaApteczka;
+        updates['medHistoria'] = bazaZdarzen;
+        updates['narzedziaKarmienie'] = bazaKarmienie;
+        updates['narzedziaBilans'] = bazaBilans;
+        updates['narzedziaSzczepienia'] = bazaSzczepien;
+        updates['gryPunkty'] = mojePunkty;
+        updates['gryOczekujace'] = oczekujaceZadania;
+        updates['gryZadania'] = bazaZadan;
+        updates['gryNagrody'] = bazaNagrod;
+        updates['grySaldo'] = saldoFinansow;
+        updates['gryHistoriaFinansow'] = historiaFinansow;
+        updates['narzedziaNotatki'] = bazaNotatek;
+        updates['narzedziaKalendarz'] = bazaKalendarz;
+        updates['narzedziaPakowanie'] = bazaPakowanie;
+        updates['narzedziaOsiagniecia'] = bazaOsiagniecia;
+        updates['narzedziaPlan'] = bazaPlan;
+        updates['narzedziaPosilki'] = bazaPosilki;
+        updates['narzedziaSejf'] = bazaSejf;
+        updates['narzedziaRozmiary'] = bazaRozmiary;
+        updates['narzedziaCytaty'] = bazaCytaty;
+        updates['narzedziaKontakty'] = bazaKontaktow;
+        updates['narzedziaEkrany'] = bazaEkrany;
+        updates['narzedziaAsystent'] = bazaCzatu;
+        
+        database.ref('users/' + currentUserUid).set(updates);
+    }
+
+    function odswiezWszystkieWidoki() {
+        odswiezWidokPulpitu(); renderujWybierakProfili(); renderujKarmienie(); renderujBilans();
+        renderujSzczepienia(); odswiezLeki(); odswiezZdarzenia(); aktualizujKonto();
+        renderujTransakcje(); renderujNotatki(); renderujKalendarz(); renderujPlan();
+        renderujPosilki(); renderujEkrany(); renderujSejf(); renderujRozmiary();
+        renderujCytaty(); renderujKontakty(); renderujPakowanie(); renderujOsiagniecia();
+        aktualizujPortfel(); renderujOczekujace(); renderujZadania(); renderujNagrody(); renderujCzat();
+    }
+
+    // Listenery Formularza Logowania
+    document.getElementById("btnZaloguj").addEventListener("click", () => {
+        const email = document.getElementById("loginEmail").value.trim(); const pass = document.getElementById("loginHaslo").value.trim();
+        if(!email || !pass) return alert("Podaj adres e-mail i hasło!");
+        auth.signInWithEmailAndPassword(email, pass).catch(error => { alert("Błąd logowania. Sprawdź e-mail i hasło."); });
+    });
+
+    document.getElementById("btnZarejestruj").addEventListener("click", () => {
+        const email = document.getElementById("loginEmail").value.trim(); const pass = document.getElementById("loginHaslo").value.trim();
+        if(!email || !pass) return alert("Podaj adres e-mail i hasło do rejestracji!");
+        auth.createUserWithEmailAndPassword(email, pass).then(() => { alert("Konto zostało utworzone!"); }).catch(error => { alert("Błąd: " + error.message); });
+    });
+
+    if(document.getElementById("btnResetHasla")) {
+        document.getElementById("btnResetHasla").addEventListener("click", () => {
+            const email = document.getElementById("loginEmail").value.trim();
+            if(!email) { return alert("Wpisz swój adres e-mail w polu u góry i kliknij ponownie."); }
+            auth.sendPasswordResetEmail(email).then(() => { alert("Wysłano link do zmiany hasła! Sprawdź skrzynkę."); }).catch((error) => { alert("Błąd: " + error.message); });
+        });
+    }
+
+    if(document.getElementById("btnWyloguj")) {
+        document.getElementById("btnWyloguj").addEventListener("click", () => { if(confirm("Na pewno chcesz się wylogować?")) { auth.signOut(); } });
+    }
+
+    // ==========================================
     // 1. ZARZĄDZANIE NAWIGACJĄ I EKRANAMI
     // ==========================================
-    const btnNavStart = document.getElementById("navStart"); const btnNavKalendarz = document.getElementById("navKalendarz"); const btnNavProfil = document.getElementById("navProfil"); const ekranDziecka = document.getElementById("ekranDziecka"); const pasekDolny = document.getElementById("pasekDolny");
-    
+    const btnNavStart = document.getElementById("navStart"); const btnNavKalendarz = document.getElementById("navKalendarz"); const btnNavProfil = document.getElementById("navProfil"); const ekranDziecka = document.getElementById("ekranDziecka");
     const wszystkieEkrany = [ 
-        document.getElementById("ekranStart"), document.getElementById("ekranProfil"), document.getElementById("ekranZdrowie"), 
+        ekranStart, document.getElementById("ekranProfil"), document.getElementById("ekranZdrowie"), 
         document.getElementById("ekranObowiazki"), document.getElementById("ekranFinanse"), document.getElementById("ekranNotatki"), 
         document.getElementById("ekranKalendarz"), document.getElementById("ekranKontakty"), document.getElementById("ekranStoper"), 
         document.getElementById("ekranRozmiary"), document.getElementById("ekranCytaty"), document.getElementById("ekranPlan"), 
         document.getElementById("ekranPosilki"), document.getElementById("ekranSejf"), document.getElementById("ekranAsystent"), 
         document.getElementById("ekranPakowanie"), document.getElementById("ekranOsiagniecia"), 
         document.getElementById("ekranPremium"), document.getElementById("ekranBlik"), document.getElementById("ekranKarmienie"), 
-        document.getElementById("ekranBilans"), document.getElementById("ekranEkrany"), document.getElementById("ekranBackup"), ekranDziecka 
+        document.getElementById("ekranBilans"), document.getElementById("ekranEkrany"), document.getElementById("ekranBackup"), ekranDziecka, ekranLogowania
     ];
 
     function czyscPasekNawigacji() { btnNavStart.classList.remove("aktywny"); btnNavKalendarz.classList.remove("aktywny"); btnNavProfil.classList.remove("aktywny"); }
@@ -118,14 +254,41 @@ document.addEventListener("DOMContentLoaded", function() {
         wszystkieEkrany.forEach(e => { if(e) e.classList.add("ukryty"); }); 
         if(ekranDoPokazania) ekranDoPokazania.classList.remove("ukryty");
         document.getElementById("tytulAplikacji").innerText = tytul;
-        if (ekranDoPokazania === ekranDziecka || ekranDoPokazania === document.getElementById("ekranPremium") || ekranDoPokazania === document.getElementById("ekranBlik")) {
+        if (ekranDoPokazania === ekranDziecka || ekranDoPokazania === document.getElementById("ekranPremium") || ekranDoPokazania === document.getElementById("ekranBlik") || ekranDoPokazania === ekranLogowania) {
             pasekDolny.classList.add("ukryty"); 
+        } else { pasekDolny.classList.remove("ukryty"); }
+    }
+
+    function odswiezWidokPulpitu() {
+        const baner = document.getElementById("banerPremiumPulpit"); 
+        const reklamy = document.querySelectorAll(".ad-banner");
+        const napisAsystent = document.getElementById("napisAsystentPulpit");
+        const napisSejf = document.getElementById("napisSejfPulpit");
+        
+        if (czyPremiumPelne) {
+            if(baner) baner.style.display = "none";
+            if(napisSejf) napisSejf.innerText = "Sejf Dokumentów";
+            if(napisAsystent) napisAsystent.innerText = "Asystent D@niel (Premium)";
+            reklamy.forEach(r => r.style.display = "none");
+            if(document.getElementById("kalendarzDarmowy")) document.getElementById("kalendarzDarmowy").classList.add("ukryty");
+            if(document.getElementById("kalendarzPremium")) document.getElementById("kalendarzPremium").classList.remove("ukryty");
+        } else if (czyTrial) {
+            if(baner) { baner.style.display = "flex"; baner.innerHTML = `<div class="premium-banner-ikona">⏳</div><div class="premium-banner-tekst"><strong style="color:#10b981;">Wersja Próbna Premium</strong><span>Pozostało: ${pozostaloTrialText}</span></div><div class="premium-banner-strzalka">➤</div>`; }
+            if(napisSejf) napisSejf.innerText = "Sejf Dokumentów";
+            if(napisAsystent) napisAsystent.innerText = "D@niel (Próbne Premium)";
+            reklamy.forEach(r => r.style.display = "none");
+            if(document.getElementById("kalendarzDarmowy")) document.getElementById("kalendarzDarmowy").classList.add("ukryty");
+            if(document.getElementById("kalendarzPremium")) document.getElementById("kalendarzPremium").classList.remove("ukryty");
         } else {
-            pasekDolny.classList.remove("ukryty");
+            if(baner) { baner.style.display = "flex"; baner.innerHTML = `<div class="premium-banner-ikona">👑</div><div class="premium-banner-tekst"><strong>Odblokuj wersję Premium!</strong><span>Więcej profili, Kopia zapasowa, Sejf</span></div><div class="premium-banner-strzalka">➤</div>`; }
+            if(napisAsystent) napisAsystent.innerText = "Asystent D@niel (Wersja Darmowa)";
+            reklamy.forEach(r => r.style.display = "flex");
+            if(document.getElementById("kalendarzDarmowy")) document.getElementById("kalendarzDarmowy").classList.remove("ukryty");
+            if(document.getElementById("kalendarzPremium")) document.getElementById("kalendarzPremium").classList.add("ukryty");
         }
     }
 
-    btnNavStart.addEventListener("click", () => { pokazEkran(wszystkieEkrany[0], "Rodzicownik 📔💙"); czyscPasekNawigacji(); btnNavStart.classList.add("aktywny"); odswiezWidokPulpitu(); });
+    btnNavStart.addEventListener("click", () => { pokazEkran(ekranStart, "Rodzicownik 📔💙"); czyscPasekNawigacji(); btnNavStart.classList.add("aktywny"); odswiezWidokPulpitu(); });
     btnNavKalendarz.addEventListener("click", () => { pokazEkran(wszystkieEkrany[6], "Kalendarz 📅"); czyscPasekNawigacji(); btnNavKalendarz.classList.add("aktywny"); renderujKalendarz(); });
     btnNavProfil.addEventListener("click", () => { pokazEkran(wszystkieEkrany[1], "Profil 👤"); czyscPasekNawigacji(); btnNavProfil.classList.add("aktywny"); });
     
@@ -143,13 +306,8 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("kafelekOsiagniecia").addEventListener("click", () => pokazEkran(wszystkieEkrany[16], "Osiągnięcia 🏆"));
     document.getElementById("kafelekEkrany").addEventListener("click", () => pokazEkran(document.getElementById("ekranEkrany"), "Czas Ekranowy 💻"));
     
-    document.getElementById("kafelekKarmienie").addEventListener("click", () => { 
-        const now = new Date(); document.getElementById("noweKarmienieData").value = now.toISOString().split('T')[0]; document.getElementById("noweKarmienieCzas").value = now.toTimeString().substring(0,5); pokazEkran(document.getElementById("ekranKarmienie"), "Karmienie 🍼"); 
-    });
-    document.getElementById("kafelekBilans").addEventListener("click", () => { 
-        document.getElementById("nowyBilansData").value = new Date().toISOString().split('T')[0]; document.getElementById("noweSzczepienieData").value = new Date().toISOString().split('T')[0]; pokazEkran(document.getElementById("ekranBilans"), "Bilans 📈"); 
-    });
-
+    document.getElementById("kafelekKarmienie").addEventListener("click", () => { const now = new Date(); document.getElementById("noweKarmienieData").value = now.toISOString().split('T')[0]; document.getElementById("noweKarmienieCzas").value = now.toTimeString().substring(0,5); pokazEkran(document.getElementById("ekranKarmienie"), "Karmienie 🍼"); });
+    document.getElementById("kafelekBilans").addEventListener("click", () => { document.getElementById("nowyBilansData").value = new Date().toISOString().split('T')[0]; document.getElementById("noweSzczepienieData").value = new Date().toISOString().split('T')[0]; pokazEkran(document.getElementById("ekranBilans"), "Bilans 📈"); });
     document.getElementById("kafelekAsystent").addEventListener("click", () => { pokazEkran(wszystkieEkrany[14], "Asystent D@niel 🤖"); wczytajAktywnyProfil(); renderujCzat(); });
     
     document.getElementById("kafelekSejf").addEventListener("click", () => { 
@@ -160,9 +318,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     document.getElementById("kafelekBackup").addEventListener("click", () => {
-        if(!czyPremium) { pokazEkran(document.getElementById("ekranPremium"), "Konto Premium 👑"); } else {
-            pokazEkran(document.getElementById("ekranBackup"), "Kopia Zapasowa 💾");
-        }
+        if(!czyPremium) { pokazEkran(document.getElementById("ekranPremium"), "Konto Premium 👑"); } else { pokazEkran(document.getElementById("ekranBackup"), "Kopia Zapasowa 💾"); }
     });
 
     document.getElementById("kafelekTrybDziecka").addEventListener("click", () => { pokazEkran(ekranDziecka, "Tryb Dziecka 🚀"); renderujWidokDziecka(); });
@@ -178,7 +334,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if(localStorage.getItem("premiumTrialEnd") || czyPremiumPelne) { przyciskTrial.style.display = "none"; }
         przyciskTrial.addEventListener("click", () => {
             if(localStorage.getItem("premiumTrialEnd")) return alert("Wykorzystałeś już swój darmowy okres próbny!");
-            localStorage.setItem("premiumTrialEnd", Date.now() + (3 * 24 * 60 * 60 * 1000));
+            zapiszWChmurze("premiumTrialEnd", Date.now() + (3 * 24 * 60 * 60 * 1000));
             alert("🎉 Gratulacje! Rozpocząłeś 3-dniowy okres próbny wersji Premium. Masz dostęp do wszystkich funkcji!"); location.reload();
         });
     }
@@ -188,7 +344,7 @@ document.addEventListener("DOMContentLoaded", function() {
         przyciskAktywuj.addEventListener("click", () => {
             const wpisanyKod = document.getElementById("inputKodAktywacyjny").value.trim().toUpperCase();
             if (PULA_KODOW_PREMIUM.includes(wpisanyKod)) {
-                localStorage.setItem("rodzicownikPremium", "true"); czyPremium = true; czyPremiumPelne = true;
+                zapiszWChmurze("rodzicownikPremium", "true"); czyPremium = true; czyPremiumPelne = true;
                 alert("✅ Gratulacje! Kod poprawny. Wersja Premium została odblokowana na zawsze!");
                 document.getElementById("inputKodAktywacyjny").value = ""; btnNavStart.click(); odswiezWidokPulpitu(); 
             } else if (wpisanyKod === "") { alert("Wpisz kod, który otrzymałeś w wiadomości SMS.");
@@ -220,6 +376,7 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("btnStoperWlasny").addEventListener("click", () => { const wlasneMinuty = parseFloat(document.getElementById("stoperWlasnyCzas").value); if(wlasneMinuty > 0) { window.startStopera(wlasneMinuty * 60); document.getElementById("stoperWlasnyCzas").value = ""; } });
     document.getElementById("btnStoperStop").addEventListener("click", () => { clearInterval(stoperInterval); czasSekundy = 0; wyswietlacz.innerText = "00:00"; });
 
+    // GENEROWANIE PDF
     document.getElementById("btnEksportPDF").addEventListener("click", () => {
         if(!czyPremium) { pokazEkran(document.getElementById("ekranPremium"), "Konto Premium 👑"); return; }
         const p = bazaProfili.find(x => x.id == aktywnyProfilId) || bazaProfili[0];
@@ -236,10 +393,7 @@ document.addEventListener("DOMContentLoaded", function() {
         html += `<div class="sekcja"><h2>📅 Zapisane Wydarzenia</h2><ul>`; if(bazaKalendarz.length === 0) html += `<li>Brak wpisów</li>`; bazaKalendarz.forEach(k => { html += `<li><strong>${k.data} ${k.czas}</strong>: ${k.tytul}</li>`; }); html += `</ul></div>`;
         html += `<div class="sekcja"><h2>💻 Cyfrowy Czas (Ekrany)</h2><ul>`; if(bazaEkrany.length === 0) html += `<li>Brak wpisów</li>`; bazaEkrany.forEach(e => { html += `<li><strong>${e.data} ${e.godzina}</strong>: ${e.urzadzenie} - ${e.akcja} ${e.czas ? '('+e.czas+' min)' : ''}</li>`; }); html += `</ul></div>`;
         html += `<div class="stopka">Wygenerowano z aplikacji Rodzicownik.</div></body></html>`;
-        
-        let printWindow = window.open('', '', 'width=800,height=800'); 
-        printWindow.document.write(html); printWindow.document.close(); printWindow.focus();
-        setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+        let printWindow = window.open('', '', 'width=800,height=800'); printWindow.document.write(html); printWindow.document.close(); printWindow.focus(); setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
     });
 
     document.getElementById("btnExportZapas").addEventListener("click", () => {
@@ -250,7 +404,6 @@ document.addEventListener("DOMContentLoaded", function() {
         a.download = `Rodzicownik_Kopia_${new Date().toISOString().split('T')[0]}.json`;
         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
     });
-
     document.getElementById("inputImportZapas").addEventListener("change", (e) => {
         if(!czyPremium) { e.target.value = ""; return alert("Funkcja Kopii Zapasowej jest dostępna tylko w wersji Premium!"); }
         const file = e.target.files[0]; if(!file) return;
@@ -263,77 +416,76 @@ document.addEventListener("DOMContentLoaded", function() {
                     Object.keys(importedData).forEach(key => { localStorage.setItem(key, importedData[key]); });
                     alert("✅ Kopia zapasowa została pomyślnie wczytana! Aplikacja zostanie zresetowana."); location.reload();
                 } catch (error) { alert("❌ Wystąpił błąd podczas wczytywania. Upewnij się, że wybierasz poprawny plik .json."); }
-            };
-            reader.readAsText(file);
+            }; reader.readAsText(file);
         } else { e.target.value = ""; }
     });
 
+    // ==========================================
+    // MODUŁY ZAPISUJĄCE DO CHMURY
+    // ==========================================
     function renderujWybierakProfili() {
         const sel = document.getElementById("wyborDziecka"); sel.innerHTML = "";
         bazaProfili.forEach(p => { const opt = document.createElement("option"); opt.value = p.id; opt.innerText = p.imie || "Dziecko"; if (p.id == aktywnyProfilId) opt.selected = true; sel.appendChild(opt); });
         wczytajAktywnyProfil();
     }
-
     function wczytajAktywnyProfil() {
         const p = bazaProfili.find(x => x.id == aktywnyProfilId) || bazaProfili[0];
         document.getElementById("imieDziecka").value = p.imie; document.getElementById("wagaDziecka").value = p.waga; document.getElementById("alergieDziecka").value = p.alergie;
         if(document.getElementById("mojPseudonimCzatu")) { document.getElementById("mojPseudonimCzatu").innerText = `Rodzic ${p.imie || "Dziecka"}`; }
-        localStorage.setItem("medProfil", JSON.stringify({imie: p.imie, waga: p.waga, alergie: p.alergie}));
+        zapiszWChmurze("medProfil", {imie: p.imie, waga: p.waga, alergie: p.alergie});
     }
 
-    document.getElementById("wyborDziecka").addEventListener("change", (e) => { aktywnyProfilId = e.target.value; localStorage.setItem("medAktywnyProfilId", aktywnyProfilId); wczytajAktywnyProfil(); });
+    document.getElementById("wyborDziecka").addEventListener("change", (e) => { aktywnyProfilId = e.target.value; zapiszWChmurze("medAktywnyProfilId", aktywnyProfilId); wczytajAktywnyProfil(); });
     document.getElementById("btnDodajDziecko").addEventListener("click", () => {
         if(!czyPremium) { if(confirm("Dodawanie kolejnych profili to funkcja Premium. Czy chcesz ją odblokować?")) { pokazEkran(document.getElementById("ekranPremium"), "Konto Premium 👑"); } return; }
         const noweImie = prompt("Podaj imię kolejnego dziecka:");
         if (noweImie) {
-            const nowyProfil = { id: Date.now(), imie: noweImie, waga: "", alergie: "" }; bazaProfili.push(nowyProfil); localStorage.setItem("medBazaProfili", JSON.stringify(bazaProfili));
-            aktywnyProfilId = nowyProfil.id; localStorage.setItem("medAktywnyProfilId", aktywnyProfilId); renderujWybierakProfili(); alert(`Dodano profil: ${noweImie}! Wpisz teraz jego wagę.`);
+            const nowyProfil = { id: Date.now(), imie: noweImie, waga: "", alergie: "" }; bazaProfili.push(nowyProfil); zapiszWChmurze("medBazaProfili", bazaProfili);
+            aktywnyProfilId = nowyProfil.id; zapiszWChmurze("medAktywnyProfilId", aktywnyProfilId); renderujWybierakProfili(); alert(`Dodano profil: ${noweImie}! Wpisz teraz jego wagę.`);
         }
     });
 
     document.getElementById("btnZapiszProfil").addEventListener("click", () => { 
         let p = bazaProfili.find(x => x.id == aktywnyProfilId); p.imie = document.getElementById("imieDziecka").value; p.waga = document.getElementById("wagaDziecka").value; p.alergie = document.getElementById("alergieDziecka").value; 
-        localStorage.setItem("medBazaProfili", JSON.stringify(bazaProfili)); renderujWybierakProfili(); alert("✅ Zapisano dane profilu!"); 
+        zapiszWChmurze("medBazaProfili", bazaProfili); renderujWybierakProfili(); alert("✅ Zapisano dane profilu!"); 
     });
 
     document.getElementById("btnZapiszPin").addEventListener("click", () => { 
         const stary = document.getElementById("inputStaryPin").value; const nowy = document.getElementById("inputNowyPin").value.trim(); 
         if (stary !== aktualnyPin) { return alert("❌ Błędny obecny kod PIN!"); }
         if (nowy === "") { return alert("❌ Nowy PIN nie może być pusty!"); }
-        aktualnyPin = nowy; localStorage.setItem("rodzicPin", aktualnyPin); 
+        aktualnyPin = nowy; zapiszWChmurze("rodzicPin", aktualnyPin); 
         document.getElementById("inputStaryPin").value = ""; document.getElementById("inputNowyPin").value = ""; alert("✅ PIN został pomyślnie zmieniony!"); 
     });
 
     document.getElementById("btnWyjscieDziecko").addEventListener("click", () => { const p = aktualnyPin === "1234" ? " (Domyślny: 1234)" : ""; if (prompt(`Podaj PIN rodzica${p}:`) === aktualnyPin) { btnNavStart.click(); } else { alert("Błędny PIN!"); } });
-    renderujWybierakProfili(); 
 
-    function renderujKarmienie() { const lista = document.getElementById("listaKarmienie"); lista.innerHTML = ""; bazaKarmienie.forEach(k => { const li = document.createElement("li"); li.className = "notatka-element"; li.innerHTML = `<div class="notatka-tekst"><strong style="color:#ad1457;">${k.data} ${k.czas}</strong><br>${k.typ} ${k.ilosc ? `(${k.ilosc} ml)` : ''}</div><button class="btn-usun" style="margin-left: 10px;">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaKarmienie = bazaKarmienie.filter(x => x.id !== k.id); localStorage.setItem("narzedziaKarmienie", JSON.stringify(bazaKarmienie)); renderujKarmienie(); }); lista.appendChild(li); }); }
-    document.getElementById("btnDodajKarmienie").addEventListener("click", () => { const t = document.getElementById("noweKarmienieTyp").value; const i = document.getElementById("noweKarmienieIlosc").value; const d = document.getElementById("noweKarmienieData").value; const c = document.getElementById("noweKarmienieCzas").value; if(!d || !c) return; bazaKarmienie.unshift({ id: Date.now(), typ: t, ilosc: i, data: d, czas: c }); localStorage.setItem("narzedziaKarmienie", JSON.stringify(bazaKarmienie)); document.getElementById("noweKarmienieIlosc").value = ""; renderujKarmienie(); }); renderujKarmienie();
+    function renderujKarmienie() { const lista = document.getElementById("listaKarmienie"); lista.innerHTML = ""; bazaKarmienie.forEach(k => { const li = document.createElement("li"); li.className = "notatka-element"; li.innerHTML = `<div class="notatka-tekst"><strong style="color:#ad1457;">${k.data} ${k.czas}</strong><br>${k.typ} ${k.ilosc ? `(${k.ilosc} ml)` : ''}</div><button class="btn-usun" style="margin-left: 10px;">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaKarmienie = bazaKarmienie.filter(x => x.id !== k.id); zapiszWChmurze("narzedziaKarmienie", bazaKarmienie); renderujKarmienie(); }); lista.appendChild(li); }); }
+    document.getElementById("btnDodajKarmienie").addEventListener("click", () => { const t = document.getElementById("noweKarmienieTyp").value; const i = document.getElementById("noweKarmienieIlosc").value; const d = document.getElementById("noweKarmienieData").value; const c = document.getElementById("noweKarmienieCzas").value; if(!d || !c) return; bazaKarmienie.unshift({ id: Date.now(), typ: t, ilosc: i, data: d, czas: c }); zapiszWChmurze("narzedziaKarmienie", bazaKarmienie); document.getElementById("noweKarmienieIlosc").value = ""; renderujKarmienie(); }); 
 
-    function renderujBilans() { const lista = document.getElementById("listaBilans"); lista.innerHTML = ""; bazaBilans.forEach(b => { const li = document.createElement("li"); li.className = "notatka-element"; li.innerHTML = `<div class="notatka-tekst"><strong style="color:#283593;">${b.data}</strong><br>Waga: ${b.waga} kg | Wzrost: ${b.wzrost} cm | Głowa: ${b.glowa} cm</div><button class="btn-usun" style="margin-left: 10px;">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaBilans = bazaBilans.filter(x => x.id !== b.id); localStorage.setItem("narzedziaBilans", JSON.stringify(bazaBilans)); renderujBilans(); }); lista.appendChild(li); }); }
-    document.getElementById("btnDodajBilans").addEventListener("click", () => { const d = document.getElementById("nowyBilansData").value; const w = document.getElementById("nowyBilansWaga").value; const wz = document.getElementById("nowyBilansWzrost").value; const g = document.getElementById("nowyBilansGlowa").value; if(!d) return; bazaBilans.unshift({ id: Date.now(), data: d, waga: w||'-', wzrost: wz||'-', glowa: g||'-' }); localStorage.setItem("narzedziaBilans", JSON.stringify(bazaBilans)); if(w) { let p = bazaProfili.find(x => x.id == aktywnyProfilId); if(p) { p.waga = w; localStorage.setItem("medBazaProfili", JSON.stringify(bazaProfili)); renderujWybierakProfili(); } } document.getElementById("nowyBilansWaga").value = ""; document.getElementById("nowyBilansWzrost").value = ""; document.getElementById("nowyBilansGlowa").value = ""; renderujBilans(); }); renderujBilans();
+    function renderujBilans() { const lista = document.getElementById("listaBilans"); lista.innerHTML = ""; bazaBilans.forEach(b => { const li = document.createElement("li"); li.className = "notatka-element"; li.innerHTML = `<div class="notatka-tekst"><strong style="color:#283593;">${b.data}</strong><br>Waga: ${b.waga} kg | Wzrost: ${b.wzrost} cm | Głowa: ${b.glowa} cm</div><button class="btn-usun" style="margin-left: 10px;">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaBilans = bazaBilans.filter(x => x.id !== b.id); zapiszWChmurze("narzedziaBilans", bazaBilans); renderujBilans(); }); lista.appendChild(li); }); }
+    document.getElementById("btnDodajBilans").addEventListener("click", () => { const d = document.getElementById("nowyBilansData").value; const w = document.getElementById("nowyBilansWaga").value; const wz = document.getElementById("nowyBilansWzrost").value; const g = document.getElementById("nowyBilansGlowa").value; if(!d) return; bazaBilans.unshift({ id: Date.now(), data: d, waga: w||'-', wzrost: wz||'-', glowa: g||'-' }); zapiszWChmurze("narzedziaBilans", bazaBilans); if(w) { let p = bazaProfili.find(x => x.id == aktywnyProfilId); if(p) { p.waga = w; zapiszWChmurze("medBazaProfili", bazaProfili); renderujWybierakProfili(); } } document.getElementById("nowyBilansWaga").value = ""; document.getElementById("nowyBilansWzrost").value = ""; document.getElementById("nowyBilansGlowa").value = ""; renderujBilans(); }); 
 
-    function renderujSzczepienia() { const lista = document.getElementById("listaSzczepien"); lista.innerHTML = ""; bazaSzczepien.forEach(s => { const li = document.createElement("li"); li.className = "notatka-element"; li.innerHTML = `<div class="notatka-tekst"><strong style="color:#00acc1;">${s.data}</strong><br>${s.nazwa}</div><button class="btn-usun" style="margin-left: 10px;">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaSzczepien = bazaSzczepien.filter(x => x.id !== s.id); localStorage.setItem("narzedziaSzczepienia", JSON.stringify(bazaSzczepien)); renderujSzczepienia(); }); lista.appendChild(li); }); }
-    document.getElementById("btnDodajSzczepienie").addEventListener("click", () => { const d = document.getElementById("noweSzczepienieData").value; const n = document.getElementById("noweSzczepienieNazwa").value.trim(); if(!d || !n) return; bazaSzczepien.push({ id: Date.now(), data: d, nazwa: n }); bazaSzczepien.sort((a,b) => new Date(b.data) - new Date(a.data)); localStorage.setItem("narzedziaSzczepienia", JSON.stringify(bazaSzczepien)); document.getElementById("noweSzczepienieNazwa").value = ""; renderujSzczepienia(); }); renderujSzczepienia();
+    function renderujSzczepienia() { const lista = document.getElementById("listaSzczepien"); lista.innerHTML = ""; bazaSzczepien.forEach(s => { const li = document.createElement("li"); li.className = "notatka-element"; li.innerHTML = `<div class="notatka-tekst"><strong style="color:#00acc1;">${s.data}</strong><br>${s.nazwa}</div><button class="btn-usun" style="margin-left: 10px;">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaSzczepien = bazaSzczepien.filter(x => x.id !== s.id); zapiszWChmurze("narzedziaSzczepienia", bazaSzczepien); renderujSzczepienia(); }); lista.appendChild(li); }); }
+    document.getElementById("btnDodajSzczepienie").addEventListener("click", () => { const d = document.getElementById("noweSzczepienieData").value; const n = document.getElementById("noweSzczepienieNazwa").value.trim(); if(!d || !n) return; bazaSzczepien.push({ id: Date.now(), data: d, nazwa: n }); bazaSzczepien.sort((a,b) => new Date(b.data) - new Date(a.data)); zapiszWChmurze("narzedziaSzczepienia", bazaSzczepien); document.getElementById("noweSzczepienieNazwa").value = ""; renderujSzczepienia(); });
 
     const typLekuSelect = document.getElementById("typLeku"); const wartoscInput = document.getElementById("wartosc"); const panelNowegoLeku = document.getElementById("panelNowegoLeku"); const infoDawka = document.getElementById("infoDawka");
-    function odswiezLeki() { typLekuSelect.innerHTML = `<option value="Ibuprofen">💊 Ibuprofen</option><option value="Paracetamol">💊 Paracetamol</option>`; mojaApteczka.forEach(l => { const o = document.createElement("option"); o.value = l; o.innerText = "💊 " + l; typLekuSelect.appendChild(o); }); typLekuSelect.innerHTML += `<option value="DodajNowy">➕ Dodaj nowy...</option><option value="Temperatura">🌡️ Temperatura</option>`; } odswiezLeki();
+    function odswiezLeki() { typLekuSelect.innerHTML = `<option value="Ibuprofen">💊 Ibuprofen</option><option value="Paracetamol">💊 Paracetamol</option>`; mojaApteczka.forEach(l => { const o = document.createElement("option"); o.value = l; o.innerText = "💊 " + l; typLekuSelect.appendChild(o); }); typLekuSelect.innerHTML += `<option value="DodajNowy">➕ Dodaj nowy...</option><option value="Temperatura">🌡️ Temperatura</option>`; }
     typLekuSelect.addEventListener("change", (e) => { infoDawka.classList.add("ukryty"); if(e.target.value === "DodajNowy") { panelNowegoLeku.classList.remove("ukryty"); document.getElementById("btnKalkulator").classList.add("ukryty"); } else { panelNowegoLeku.classList.add("ukryty"); document.getElementById("btnKalkulator").classList.remove("ukryty"); } if(e.target.value === "Temperatura") { wartoscInput.placeholder = "Wynik °C"; document.getElementById("btnKalkulator").classList.add("ukryty"); } else { wartoscInput.placeholder = "Dawka (ml)"; } });
-    document.getElementById("btnZapiszNowyLek").addEventListener("click", () => { const n = document.getElementById("nowaNazwaLeku").value.trim(); if(n){ mojaApteczka.push(n); localStorage.setItem("medApteczka", JSON.stringify(mojaApteczka)); odswiezLeki(); typLekuSelect.value = n; panelNowegoLeku.classList.add("ukryty"); } });
-    function odswiezZdarzenia() { const l = document.getElementById("listaZdarzen"); l.innerHTML = ""; bazaZdarzen.forEach(z => { const li = document.createElement("li"); li.className = z.typ === "Temperatura" ? "wpis-temp" : "wpis-lek"; li.innerHTML = `<strong>${z.godzinaWyswietlana}</strong> - ${z.lek}: <strong>${z.dawka}</strong>`; l.appendChild(li); }); } odswiezZdarzenia();
-    document.getElementById("btnZapiszLek").addEventListener("click", () => { const t = typLekuSelect.value; const txt = typLekuSelect.options[typLekuSelect.selectedIndex].text; const w = wartoscInput.value; if(t!=="DodajNowy" && w) { const d = new Date(); bazaZdarzen.unshift({ typ: t, lek: txt, dawka: w, czasWpisu: d.getTime(), godzinaWyswietlana: d.getHours().toString().padStart(2,'0')+":"+d.getMinutes().toString().padStart(2,'0') }); localStorage.setItem("medHistoria", JSON.stringify(bazaZdarzen)); wartoscInput.value=""; infoDawka.classList.add("ukryty"); odswiezZdarzenia(); } });
-    document.getElementById("btnKalkulator").addEventListener("click", () => { const p = JSON.parse(localStorage.getItem("medProfil")); if(!p || !p.waga || p.waga <= 0) return alert("Brak wagi! Uzupełnij ją w 'Profilu' lub dodaj w 'Bilansie'."); const waga = parseFloat(p.waga); const typ = typLekuSelect.value; let dawka = 0; let opisStężenia = ""; if(typ === "Ibuprofen") { dawka = waga / 4; opisStężenia = "Syrop FORTE (40mg/ml). Podawać co 6-8h."; } else if (typ === "Paracetamol") { dawka = (waga * 15) / 24; opisStężenia = "Syrop (120mg/5ml). Podawać co 4-6h."; } else { return alert("Kalkulator działa tylko dla Ibuprofenu i Paracetamolu."); } const wynik = Math.round(dawka * 10) / 10; wartoscInput.value = wynik; infoDawka.innerHTML = `✨ Sugerowana <strong>JEDNORAZOWA</strong> dawka dla ${waga}kg:<br><span style="font-size: 20px; font-weight: 900; color: #1e40af; display: block; margin: 5px 0;">${wynik} ml</span><span style="font-size: 11px; color: #475569;">Ważne: ${opisStężenia}</span>`; infoDawka.classList.remove("ukryty"); });
-    document.getElementById("notatkiLekarz").value = localStorage.getItem("medNotatki") || ""; document.getElementById("notatkiLekarz").addEventListener("input", (e) => localStorage.setItem("medNotatki", e.target.value));
-    document.getElementById("btnWyczysc").addEventListener("click", () => { if(confirm("Wyczyścić historię leków?")){ localStorage.removeItem("medHistoria"); bazaZdarzen=[]; document.getElementById("notatkiLekarz").value=""; odswiezZdarzenia(); }});
+    document.getElementById("btnZapiszNowyLek").addEventListener("click", () => { const n = document.getElementById("nowaNazwaLeku").value.trim(); if(n){ mojaApteczka.push(n); zapiszWChmurze("medApteczka", mojaApteczka); odswiezLeki(); typLekuSelect.value = n; panelNowegoLeku.classList.add("ukryty"); } });
+    function odswiezZdarzenia() { const l = document.getElementById("listaZdarzen"); l.innerHTML = ""; bazaZdarzen.forEach(z => { const li = document.createElement("li"); li.className = z.typ === "Temperatura" ? "wpis-temp" : "wpis-lek"; li.innerHTML = `<strong>${z.godzinaWyswietlana}</strong> - ${z.lek}: <strong>${z.dawka}</strong>`; l.appendChild(li); }); } 
+    document.getElementById("btnZapiszLek").addEventListener("click", () => { const t = typLekuSelect.value; const txt = typLekuSelect.options[typLekuSelect.selectedIndex].text; const w = wartoscInput.value; if(t!=="DodajNowy" && w) { const d = new Date(); bazaZdarzen.unshift({ typ: t, lek: txt, dawka: w, czasWpisu: d.getTime(), godzinaWyswietlana: d.getHours().toString().padStart(2,'0')+":"+d.getMinutes().toString().padStart(2,'0') }); zapiszWChmurze("medHistoria", bazaZdarzen); wartoscInput.value=""; infoDawka.classList.add("ukryty"); odswiezZdarzenia(); } });
+    document.getElementById("btnKalkulator").addEventListener("click", () => { const p = bazaProfili.find(x => x.id == aktywnyProfilId) || bazaProfili[0]; if(!p || !p.waga || p.waga <= 0) return alert("Brak wagi! Uzupełnij ją w 'Profilu' lub dodaj w 'Bilansie'."); const waga = parseFloat(p.waga); const typ = typLekuSelect.value; let dawka = 0; let opisStężenia = ""; if(typ === "Ibuprofen") { dawka = waga / 4; opisStężenia = "Syrop FORTE (40mg/ml). Podawać co 6-8h."; } else if (typ === "Paracetamol") { dawka = (waga * 15) / 24; opisStężenia = "Syrop (120mg/5ml). Podawać co 4-6h."; } else { return alert("Kalkulator działa tylko dla Ibuprofenu i Paracetamolu."); } const wynik = Math.round(dawka * 10) / 10; wartoscInput.value = wynik; infoDawka.innerHTML = `✨ Sugerowana <strong>JEDNORAZOWA</strong> dawka dla ${waga}kg:<br><span style="font-size: 20px; font-weight: 900; color: #1e40af; display: block; margin: 5px 0;">${wynik} ml</span><span style="font-size: 11px; color: #475569;">Ważne: ${opisStężenia}</span>`; infoDawka.classList.remove("ukryty"); });
+    document.getElementById("notatkiLekarz").value = localStorage.getItem("medNotatki") || ""; document.getElementById("notatkiLekarz").addEventListener("input", (e) => zapiszWChmurze("medNotatki", e.target.value));
+    document.getElementById("btnWyczysc").addEventListener("click", () => { if(confirm("Wyczyścić historię leków?")){ usunZChmury("medHistoria"); bazaZdarzen=[]; document.getElementById("notatkiLekarz").value=""; odswiezZdarzenia(); }});
 
-    function aktualizujKonto() { const s = saldoFinansow.toFixed(2); document.getElementById("sumaFinanse").innerText = s; document.getElementById("sumaFinanseDziecko").innerText = s; localStorage.setItem("grySaldo", saldoFinansow); }
+    function aktualizujKonto() { const s = saldoFinansow.toFixed(2); document.getElementById("sumaFinanse").innerText = s; document.getElementById("sumaFinanseDziecko").innerText = s; zapiszWChmurze("grySaldo", saldoFinansow); }
     function renderujTransakcje() { const l = document.getElementById("listaTransakcji"); l.innerHTML = ""; historiaFinansow.forEach(tr => { const li = document.createElement("li"); const p = tr.kwota > 0; li.innerHTML = `<strong>${tr.data}</strong> - ${tr.opis}: <span class="${p ? "transakcja-plus" : "transakcja-minus"}">${p ? "+" : ""}${tr.kwota.toFixed(2)} zł</span>`; li.style.borderLeftColor = p ? "#10b981" : "#ef4444"; l.appendChild(li); }); }
     document.getElementById("btnWplata").addEventListener("click", () => dodajTrans(true)); document.getElementById("btnWydatek").addEventListener("click", () => dodajTrans(false));
-    function dodajTrans(czyW) { const o = document.getElementById("opisTransakcji").value.trim(); const k = parseFloat(document.getElementById("kwotaTransakcji").value); if (o === "" || isNaN(k) || k <= 0) return alert("Błąd!"); const kOst = czyW ? k : -k; const d = new Date(); const dStr = d.getDate().toString().padStart(2,'0')+"."+(d.getMonth()+1).toString().padStart(2,'0')+" "+d.getHours().toString().padStart(2,'0')+":"+d.getMinutes().toString().padStart(2,'0'); historiaFinansow.unshift({ opis: o, kwota: kOst, data: dStr }); saldoFinansow += kOst; localStorage.setItem("gryHistoriaFinansow", JSON.stringify(historiaFinansow)); document.getElementById("opisTransakcji").value=""; document.getElementById("kwotaTransakcji").value=""; aktualizujKonto(); renderujTransakcje(); }
-    aktualizujKonto(); renderujTransakcje();
+    function dodajTrans(czyW) { const o = document.getElementById("opisTransakcji").value.trim(); const k = parseFloat(document.getElementById("kwotaTransakcji").value); if (o === "" || isNaN(k) || k <= 0) return alert("Błąd!"); const kOst = czyW ? k : -k; const d = new Date(); const dStr = d.getDate().toString().padStart(2,'0')+"."+(d.getMonth()+1).toString().padStart(2,'0')+" "+d.getHours().toString().padStart(2,'0')+":"+d.getMinutes().toString().padStart(2,'0'); historiaFinansow.unshift({ opis: o, kwota: kOst, data: dStr }); saldoFinansow += kOst; zapiszWChmurze("gryHistoriaFinansow", historiaFinansow); document.getElementById("opisTransakcji").value=""; document.getElementById("kwotaTransakcji").value=""; aktualizujKonto(); renderujTransakcje(); }
 
-    function renderujNotatki() { const lista = document.getElementById("listaNotatek"); lista.innerHTML = ""; bazaNotatek.forEach(n => { const li = document.createElement("li"); li.className = "notatka-element"; li.innerHTML = `<div class="notatka-tekst">${n.tekst}</div><button class="btn-usun" style="margin-left: 10px; margin-top: -5px;">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaNotatek = bazaNotatek.filter(x => x.id !== n.id); localStorage.setItem("narzedziaNotatki", JSON.stringify(bazaNotatek)); renderujNotatki(); }); lista.appendChild(li); }); }
-    document.getElementById("btnDodajNotatke").addEventListener("click", () => { const t = document.getElementById("nowaNotatkaTekst").value.trim(); if (!t) return; bazaNotatek.unshift({ id: Date.now(), tekst: t }); localStorage.setItem("narzedziaNotatki", JSON.stringify(bazaNotatek)); document.getElementById("nowaNotatkaTekst").value = ""; renderujNotatki(); }); renderujNotatki();
+    function renderujNotatki() { const lista = document.getElementById("listaNotatek"); lista.innerHTML = ""; bazaNotatek.forEach(n => { const li = document.createElement("li"); li.className = "notatka-element"; li.innerHTML = `<div class="notatka-tekst">${n.tekst}</div><button class="btn-usun" style="margin-left: 10px; margin-top: -5px;">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaNotatek = bazaNotatek.filter(x => x.id !== n.id); zapiszWChmurze("narzedziaNotatki", bazaNotatek); renderujNotatki(); }); lista.appendChild(li); }); }
+    document.getElementById("btnDodajNotatke").addEventListener("click", () => { const t = document.getElementById("nowaNotatkaTekst").value.trim(); if (!t) return; bazaNotatek.unshift({ id: Date.now(), tekst: t }); zapiszWChmurze("narzedziaNotatki", bazaNotatek); document.getElementById("nowaNotatkaTekst").value = ""; renderujNotatki(); }); 
 
     function renderujKalendarz() { 
         const lista = document.getElementById("listaWydarzen"); lista.innerHTML = ""; 
@@ -353,9 +505,8 @@ document.addEventListener("DOMContentLoaded", function() {
                     ${wyd.osoba ? `<span style="background:#f3e8ff; color:#6b21a8; padding:2px 6px; border-radius:4px;">${wyd.osoba}</span>` : ''}
                 </div>`;
             }
-
             li.innerHTML = `<div class="wydarzenie-data"><small>${miesiace[dataObj.getMonth()]}</small><span>${dataObj.getDate().toString().padStart(2, '0')}</span></div><div class="wydarzenie-info"><span class="wydarzenie-tytul">${wyd.tytul}</span><span class="wydarzenie-czas">🕒 ${wyd.czas || "Cały dzień"}</span>${etykiety}${wyd.opis ? `<div style="font-size:12px; color:#64748b; margin-top:3px; font-style:italic;">${wyd.opis}</div>` : ''}</div><button class="btn-usun" style="font-size: 20px;">🗑️</button>`; 
-            li.querySelector('.btn-usun').addEventListener('click', () => { bazaKalendarz = bazaKalendarz.filter(w => w.id !== wyd.id); localStorage.setItem("narzedziaKalendarz", JSON.stringify(bazaKalendarz)); renderujKalendarz(); }); 
+            li.querySelector('.btn-usun').addEventListener('click', () => { bazaKalendarz = bazaKalendarz.filter(w => w.id !== wyd.id); zapiszWChmurze("narzedziaKalendarz", bazaKalendarz); renderujKalendarz(); }); 
             lista.appendChild(li); 
         }); 
     }
@@ -363,63 +514,57 @@ document.addEventListener("DOMContentLoaded", function() {
         const tytul = document.getElementById("noweWydarzenieTytul").value.trim(); const data = document.getElementById("noweWydarzenieData").value; const czas = document.getElementById("noweWydarzenieCzas").value; 
         if (!tytul || !data) return alert("Podaj tytuł i datę!"); 
         bazaKalendarz.push({ id: Date.now(), tytul, data, czas, dataPełna: czas ? `${data}T${czas}` : `${data}T00:00` }); 
-        localStorage.setItem("narzedziaKalendarz", JSON.stringify(bazaKalendarz)); document.getElementById("noweWydarzenieTytul").value = ""; renderujKalendarz(); 
+        zapiszWChmurze("narzedziaKalendarz", bazaKalendarz); document.getElementById("noweWydarzenieTytul").value = ""; renderujKalendarz(); 
     }); 
     document.getElementById("btnDodajWydarzeniePremium").addEventListener("click", () => { 
         const tytul = document.getElementById("noweWydarzenieTytulPremium").value.trim(); const kategoria = document.getElementById("noweWydarzenieKategoria").value; const priorytet = document.getElementById("noweWydarzeniePriorytet").value; const data = document.getElementById("noweWydarzenieDataPremium").value; const czas = document.getElementById("noweWydarzenieCzasPremium").value; const opis = document.getElementById("noweWydarzenieOpis").value.trim();
         const cykl = document.getElementById("noweWydarzenieCykl").value; const przypomnienie = document.getElementById("noweWydarzeniePrzypomnienie").value; const osoba = document.getElementById("noweWydarzenieOsoba").value; const kolor = document.getElementById("noweWydarzenieKolor").value;
         if (!tytul || !data) return alert("Podaj tytuł i datę wydarzenia!"); 
         bazaKalendarz.push({ id: Date.now(), tytul, data, czas, dataPełna: czas ? `${data}T${czas}` : `${data}T00:00`, kategoria, priorytet, opis, cykl, przypomnienie, osoba, kolor }); 
-        localStorage.setItem("narzedziaKalendarz", JSON.stringify(bazaKalendarz)); document.getElementById("noweWydarzenieTytulPremium").value = ""; document.getElementById("noweWydarzenieOpis").value = ""; renderujKalendarz(); 
+        zapiszWChmurze("narzedziaKalendarz", bazaKalendarz); document.getElementById("noweWydarzenieTytulPremium").value = ""; document.getElementById("noweWydarzenieOpis").value = ""; renderujKalendarz(); 
     }); 
-    renderujKalendarz();
 
     const dniWaga = {"Poniedziałek":1, "Wtorek":2, "Środa":3, "Czwartek":4, "Piątek":5, "Sobota":6, "Niedziela":7};
-    function renderujPlan() { const lista = document.getElementById("listaPlan"); lista.innerHTML = ""; bazaPlan.sort((a,b) => (dniWaga[a.dzien] - dniWaga[b.dzien]) || a.czas.localeCompare(b.czas)); bazaPlan.forEach(p => { const li = document.createElement("li"); li.className = "plan-element"; li.innerHTML = `<div class="notatka-tekst"><span class="plan-dzien">${p.dzien}</span><strong>${p.czas}</strong> - ${p.nazwa}</div><button class="btn-usun">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaPlan = bazaPlan.filter(x => x.id !== p.id); localStorage.setItem("narzedziaPlan", JSON.stringify(bazaPlan)); renderujPlan(); }); lista.appendChild(li); }); }
-    document.getElementById("btnDodajPlan").addEventListener("click", () => { const d = document.getElementById("nowyPlanDzien").value; const c = document.getElementById("nowyPlanCzas").value; const n = document.getElementById("nowyPlanNazwa").value.trim(); if(!c || !n) return; bazaPlan.push({id: Date.now(), dzien: d, czas: c, nazwa: n}); localStorage.setItem("narzedziaPlan", JSON.stringify(bazaPlan)); document.getElementById("nowyPlanNazwa").value=""; document.getElementById("nowyPlanCzas").value=""; renderujPlan(); }); renderujPlan();
+    function renderujPlan() { const lista = document.getElementById("listaPlan"); lista.innerHTML = ""; bazaPlan.sort((a,b) => (dniWaga[a.dzien] - dniWaga[b.dzien]) || a.czas.localeCompare(b.czas)); bazaPlan.forEach(p => { const li = document.createElement("li"); li.className = "plan-element"; li.innerHTML = `<div class="notatka-tekst"><span class="plan-dzien">${p.dzien}</span><strong>${p.czas}</strong> - ${p.nazwa}</div><button class="btn-usun">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaPlan = bazaPlan.filter(x => x.id !== p.id); zapiszWChmurze("narzedziaPlan", bazaPlan); renderujPlan(); }); lista.appendChild(li); }); }
+    document.getElementById("btnDodajPlan").addEventListener("click", () => { const d = document.getElementById("nowyPlanDzien").value; const c = document.getElementById("nowyPlanCzas").value; const n = document.getElementById("nowyPlanNazwa").value.trim(); if(!c || !n) return; bazaPlan.push({id: Date.now(), dzien: d, czas: c, nazwa: n}); zapiszWChmurze("narzedziaPlan", bazaPlan); document.getElementById("nowyPlanNazwa").value=""; document.getElementById("nowyPlanCzas").value=""; renderujPlan(); }); 
 
     const typWaga = {"Śniadanie":1, "Obiad":2, "Kolacja":3, "Przekąska":4};
-    function renderujPosilki() { const lista = document.getElementById("listaPosilki"); lista.innerHTML = ""; bazaPosilki.sort((a,b) => (dniWaga[a.dzien] - dniWaga[b.dzien]) || (typWaga[a.typ] - typWaga[b.typ])); bazaPosilki.forEach(p => { const li = document.createElement("li"); li.className = "posilek-element"; li.innerHTML = `<div class="notatka-tekst"><span class="posilek-dzien">${p.dzien}</span><strong>${p.typ}</strong>: ${p.nazwa}</div><button class="btn-usun">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaPosilki = bazaPosilki.filter(x => x.id !== p.id); localStorage.setItem("narzedziaPosilki", JSON.stringify(bazaPosilki)); renderujPosilki(); }); lista.appendChild(li); }); }
-    document.getElementById("btnDodajPosilek").addEventListener("click", () => { const d = document.getElementById("nowyPosilekDzien").value; const t = document.getElementById("nowyPosilekTyp").value; const n = document.getElementById("nowyPosilekNazwa").value.trim(); if(!n) return; bazaPosilki.push({id: Date.now(), dzien: d, typ: t, nazwa: n}); localStorage.setItem("narzedziaPosilki", JSON.stringify(bazaPosilki)); document.getElementById("nowyPosilekNazwa").value=""; renderujPosilki(); }); renderujPosilki();
+    function renderujPosilki() { const lista = document.getElementById("listaPosilki"); lista.innerHTML = ""; bazaPosilki.sort((a,b) => (dniWaga[a.dzien] - dniWaga[b.dzien]) || (typWaga[a.typ] - typWaga[b.typ])); bazaPosilki.forEach(p => { const li = document.createElement("li"); li.className = "posilek-element"; li.innerHTML = `<div class="notatka-tekst"><span class="posilek-dzien">${p.dzien}</span><strong>${p.typ}</strong>: ${p.nazwa}</div><button class="btn-usun">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaPosilki = bazaPosilki.filter(x => x.id !== p.id); zapiszWChmurze("narzedziaPosilki", bazaPosilki); renderujPosilki(); }); lista.appendChild(li); }); }
+    document.getElementById("btnDodajPosilek").addEventListener("click", () => { const d = document.getElementById("nowyPosilekDzien").value; const t = document.getElementById("nowyPosilekTyp").value; const n = document.getElementById("nowyPosilekNazwa").value.trim(); if(!n) return; bazaPosilki.push({id: Date.now(), dzien: d, typ: t, nazwa: n}); zapiszWChmurze("narzedziaPosilki", bazaPosilki); document.getElementById("nowyPosilekNazwa").value=""; renderujPosilki(); }); 
 
-    function renderujEkrany() { const lista = document.getElementById("listaEkrany"); lista.innerHTML = ""; bazaEkrany.forEach(e => { const li = document.createElement("li"); li.className = "notatka-element"; li.innerHTML = `<div class="notatka-tekst"><strong style="color:#475569;">${e.data} o ${e.godzina}</strong><br>${e.akcja}: <strong style="color:#3b82f6;">${e.urzadzenie}</strong> ${e.czas ? `<br><span style="color:#10b981; font-size:12px;">Zadeklarowano: ${e.czas} min</span>` : ''}</div><button class="btn-usun" style="margin-left: 10px;">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaEkrany = bazaEkrany.filter(x => x.id !== e.id); localStorage.setItem("narzedziaEkrany", JSON.stringify(bazaEkrany)); renderujEkrany(); }); lista.appendChild(li); }); }
-    document.getElementById("btnDodajEkran").addEventListener("click", () => { const u = document.getElementById("nowyEkranUrzadzenie").value; const a = document.getElementById("nowyEkranAkcja").value; const c = document.getElementById("nowyEkranCzas").value; const d = new Date(); const dStr = d.getDate().toString().padStart(2,'0') + "." + (d.getMonth()+1).toString().padStart(2,'0') + "." + d.getFullYear(); const tStr = d.getHours().toString().padStart(2,'0')+":"+d.getMinutes().toString().padStart(2,'0'); bazaEkrany.unshift({ id: Date.now(), urzadzenie: u, akcja: a, czas: c, data: dStr, godzina: tStr }); localStorage.setItem("narzedziaEkrany", JSON.stringify(bazaEkrany)); document.getElementById("nowyEkranCzas").value = ""; if(a.includes("Zdał sprzęt")) { alert("Świetnie! Dziecko zdało sprzęt. W nagrodę możesz dodać mu punkty w module Punkty ⭐!"); } renderujEkrany(); }); renderujEkrany();
+    function renderujEkrany() { const lista = document.getElementById("listaEkrany"); lista.innerHTML = ""; bazaEkrany.forEach(e => { const li = document.createElement("li"); li.className = "notatka-element"; li.innerHTML = `<div class="notatka-tekst"><strong style="color:#475569;">${e.data} o ${e.godzina}</strong><br>${e.akcja}: <strong style="color:#3b82f6;">${e.urzadzenie}</strong> ${e.czas ? `<br><span style="color:#10b981; font-size:12px;">Zadeklarowano: ${e.czas} min</span>` : ''}</div><button class="btn-usun" style="margin-left: 10px;">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaEkrany = bazaEkrany.filter(x => x.id !== e.id); zapiszWChmurze("narzedziaEkrany", bazaEkrany); renderujEkrany(); }); lista.appendChild(li); }); }
+    document.getElementById("btnDodajEkran").addEventListener("click", () => { const u = document.getElementById("nowyEkranUrzadzenie").value; const a = document.getElementById("nowyEkranAkcja").value; const c = document.getElementById("nowyEkranCzas").value; const d = new Date(); const dStr = d.getDate().toString().padStart(2,'0') + "." + (d.getMonth()+1).toString().padStart(2,'0') + "." + d.getFullYear(); const tStr = d.getHours().toString().padStart(2,'0')+":"+d.getMinutes().toString().padStart(2,'0'); bazaEkrany.unshift({ id: Date.now(), urzadzenie: u, akcja: a, czas: c, data: dStr, godzina: tStr }); zapiszWChmurze("narzedziaEkrany", bazaEkrany); document.getElementById("nowyEkranCzas").value = ""; if(a.includes("Zdał sprzęt")) { alert("Świetnie! Dziecko zdało sprzęt. W nagrodę możesz dodać mu punkty w module Punkty ⭐!"); } renderujEkrany(); });
 
     let aktualnyZalacznikSejf = ""; const plikInput = document.getElementById("nowySejfPlik"); const podgladTekst = document.getElementById("podgladSejfPliku");
     if(plikInput) { plikInput.addEventListener("change", function(e) { const file = e.target.files[0]; if (!file) return; podgladTekst.innerText = "⏳ Optymalizacja zdjęcia..."; const reader = new FileReader(); reader.onload = function(event) { const img = new Image(); img.onload = function() { const canvas = document.createElement("canvas"); const MAX_WIDTH = 600; let scaleSize = 1; if (img.width > MAX_WIDTH) { scaleSize = MAX_WIDTH / img.width; } canvas.width = img.width * scaleSize; canvas.height = img.height * scaleSize; const ctx = canvas.getContext("2d"); ctx.drawImage(img, 0, 0, canvas.width, canvas.height); aktualnyZalacznikSejf = canvas.toDataURL("image/jpeg", 0.7); podgladTekst.innerText = "✅ Skan gotowy do zabezpieczenia!"; }; img.src = event.target.result; }; reader.readAsDataURL(file); }); }
-    function renderujSejf() { const lista = document.getElementById("listaSejf"); lista.innerHTML = ""; bazaSejf.forEach(s => { const li = document.createElement("li"); li.className = "sejf-element"; let imgHtml = ""; if (s.zdjecie) { imgHtml = `<div style="margin-top:10px;"><img src="${s.zdjecie}" style="max-width: 100%; border-radius: 8px; border: 1px solid #cbd5e1; cursor: zoom-in;" onclick="window.open(this.src)" alt="Skan dokumentu"></div>`; } li.innerHTML = `<div style="flex-grow: 1; margin-right: 15px;"><strong style="color:#1e293b;">${s.nazwa}</strong>${s.wartosc ? `<span class="sejf-wartosc">${s.wartosc}</span>` : ''}${imgHtml}</div><button class="btn-usun" style="flex-shrink: 0;">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaSejf = bazaSejf.filter(x => x.id !== s.id); localStorage.setItem("narzedziaSejf", JSON.stringify(bazaSejf)); renderujSejf(); }); lista.appendChild(li); }); }
-    document.getElementById("btnDodajSejf").addEventListener("click", () => { const n = document.getElementById("nowySejfKategoria").value; const w = document.getElementById("nowySejfWartosc").value.trim(); if(!w && !aktualnyZalacznikSejf) { return alert("Wpisz wartość lub dodaj zdjęcie dokumentu!"); } bazaSejf.unshift({ id: Date.now(), nazwa: n, wartosc: w, zdjecie: aktualnyZalacznikSejf }); localStorage.setItem("narzedziaSejf", JSON.stringify(bazaSejf)); document.getElementById("nowySejfWartosc").value = ""; document.getElementById("nowySejfPlik").value = ""; aktualnyZalacznikSejf = ""; podgladTekst.innerText = ""; renderujSejf(); }); renderujSejf();
+    function renderujSejf() { const lista = document.getElementById("listaSejf"); lista.innerHTML = ""; bazaSejf.forEach(s => { const li = document.createElement("li"); li.className = "sejf-element"; let imgHtml = ""; if (s.zdjecie) { imgHtml = `<div style="margin-top:10px;"><img src="${s.zdjecie}" style="max-width: 100%; border-radius: 8px; border: 1px solid #cbd5e1; cursor: zoom-in;" onclick="window.open(this.src)" alt="Skan dokumentu"></div>`; } li.innerHTML = `<div style="flex-grow: 1; margin-right: 15px;"><strong style="color:#1e293b;">${s.nazwa}</strong>${s.wartosc ? `<span class="sejf-wartosc">${s.wartosc}</span>` : ''}${imgHtml}</div><button class="btn-usun" style="flex-shrink: 0;">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaSejf = bazaSejf.filter(x => x.id !== s.id); zapiszWChmurze("narzedziaSejf", bazaSejf); renderujSejf(); }); lista.appendChild(li); }); }
+    document.getElementById("btnDodajSejf").addEventListener("click", () => { const n = document.getElementById("nowySejfKategoria").value; const w = document.getElementById("nowySejfWartosc").value.trim(); if(!w && !aktualnyZalacznikSejf) { return alert("Wpisz wartość lub dodaj zdjęcie dokumentu!"); } bazaSejf.unshift({ id: Date.now(), nazwa: n, wartosc: w, zdjecie: aktualnyZalacznikSejf }); zapiszWChmurze("narzedziaSejf", bazaSejf); document.getElementById("nowySejfWartosc").value = ""; document.getElementById("nowySejfPlik").value = ""; aktualnyZalacznikSejf = ""; podgladTekst.innerText = ""; renderujSejf(); }); 
 
-    function renderujRozmiary() { const lista = document.getElementById("listaRozmiarow"); lista.innerHTML = ""; bazaRozmiary.forEach(r => { const li = document.createElement("li"); li.className = "rozmiar-element"; li.innerHTML = `<div><div style="font-size: 12px; color: #64748b; margin-bottom: 5px;">Zaktualizowano: ${r.data}</div><div class="rozmiar-detale">${r.wzrost ? `<span>Wzrost: ${r.wzrost}cm</span>` : ''}${r.ubranie ? `<span>Ubranie: ${r.ubranie}</span>` : ''}${r.but ? `<span>But: ${r.but}</span>` : ''}</div></div><button class="btn-usun">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaRozmiary = bazaRozmiary.filter(x => x.id !== r.id); localStorage.setItem("narzedziaRozmiary", JSON.stringify(bazaRozmiary)); renderujRozmiary(); }); lista.appendChild(li); }); }
-    document.getElementById("btnDodajRozmiar").addEventListener("click", () => { const w = document.getElementById("nowyRozmiarWzrost").value; const u = document.getElementById("nowyRozmiarUbranie").value; const b = document.getElementById("nowyRozmiarBut").value; if(!w && !u && !b) return alert("Podaj chociaż jeden rozmiar!"); const d = new Date(); const dataStr = d.getDate().toString().padStart(2,'0') + "." + (d.getMonth()+1).toString().padStart(2,'0') + "." + d.getFullYear(); bazaRozmiary.unshift({ id: Date.now(), wzrost: w, ubranie: u, but: b, data: dataStr }); localStorage.setItem("narzedziaRozmiary", JSON.stringify(bazaRozmiary)); document.getElementById("nowyRozmiarWzrost").value=""; document.getElementById("nowyRozmiarUbranie").value=""; document.getElementById("nowyRozmiarBut").value=""; renderujRozmiary(); }); renderujRozmiary();
+    function renderujRozmiary() { const lista = document.getElementById("listaRozmiarow"); lista.innerHTML = ""; bazaRozmiary.forEach(r => { const li = document.createElement("li"); li.className = "rozmiar-element"; li.innerHTML = `<div><div style="font-size: 12px; color: #64748b; margin-bottom: 5px;">Zaktualizowano: ${r.data}</div><div class="rozmiar-detale">${r.wzrost ? `<span>Wzrost: ${r.wzrost}cm</span>` : ''}${r.ubranie ? `<span>Ubranie: ${r.ubranie}</span>` : ''}${r.but ? `<span>But: ${r.but}</span>` : ''}</div></div><button class="btn-usun">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaRozmiary = bazaRozmiary.filter(x => x.id !== r.id); zapiszWChmurze("narzedziaRozmiary", bazaRozmiary); renderujRozmiary(); }); lista.appendChild(li); }); }
+    document.getElementById("btnDodajRozmiar").addEventListener("click", () => { const w = document.getElementById("nowyRozmiarWzrost").value; const u = document.getElementById("nowyRozmiarUbranie").value; const b = document.getElementById("nowyRozmiarBut").value; if(!w && !u && !b) return alert("Podaj chociaż jeden rozmiar!"); const d = new Date(); const dataStr = d.getDate().toString().padStart(2,'0') + "." + (d.getMonth()+1).toString().padStart(2,'0') + "." + d.getFullYear(); bazaRozmiary.unshift({ id: Date.now(), wzrost: w, ubranie: u, but: b, data: dataStr }); zapiszWChmurze("narzedziaRozmiary", bazaRozmiary); document.getElementById("nowyRozmiarWzrost").value=""; document.getElementById("nowyRozmiarUbranie").value=""; document.getElementById("nowyRozmiarBut").value=""; renderujRozmiary(); }); 
 
-    function renderujCytaty() { const lista = document.getElementById("listaCytatow"); lista.innerHTML = ""; bazaCytaty.forEach(c => { const li = document.createElement("li"); li.className = "cytat-element"; li.innerHTML = `<div class="notatka-tekst" style="font-style: italic;">"${c.tekst}"</div><button class="btn-usun" style="margin-left: 10px; margin-top: -5px;">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaCytaty = bazaCytaty.filter(x => x.id !== c.id); localStorage.setItem("narzedziaCytaty", JSON.stringify(bazaCytaty)); renderujCytaty(); }); lista.appendChild(li); }); }
-    document.getElementById("btnDodajCytat").addEventListener("click", () => { const t = document.getElementById("nowyCytatTekst").value.trim(); if (!t) return; bazaCytaty.unshift({ id: Date.now(), tekst: t }); localStorage.setItem("narzedziaCytaty", JSON.stringify(bazaCytaty)); document.getElementById("nowyCytatTekst").value = ""; renderujCytaty(); }); renderujCytaty();
+    function renderujCytaty() { const lista = document.getElementById("listaCytatow"); lista.innerHTML = ""; bazaCytaty.forEach(c => { const li = document.createElement("li"); li.className = "cytat-element"; li.innerHTML = `<div class="notatka-tekst" style="font-style: italic;">"${c.tekst}"</div><button class="btn-usun" style="margin-left: 10px; margin-top: -5px;">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaCytaty = bazaCytaty.filter(x => x.id !== c.id); zapiszWChmurze("narzedziaCytaty", bazaCytaty); renderujCytaty(); }); lista.appendChild(li); }); }
+    document.getElementById("btnDodajCytat").addEventListener("click", () => { const t = document.getElementById("nowyCytatTekst").value.trim(); if (!t) return; bazaCytaty.unshift({ id: Date.now(), tekst: t }); zapiszWChmurze("narzedziaCytaty", bazaCytaty); document.getElementById("nowyCytatTekst").value = ""; renderujCytaty(); }); 
 
-    function renderujKontakty() { const lista = document.getElementById("listaKontaktow"); lista.innerHTML = ""; bazaKontaktow.forEach(k => { const li = document.createElement("li"); li.className = "kontakt-element"; li.innerHTML = `<div class="notatka-tekst"><strong style="color:#1e293b;">${k.nazwa}</strong><br><span style="color:#3b82f6;">${k.numer}</span></div><button class="btn-usun" style="margin-left: 10px;">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaKontaktow = bazaKontaktow.filter(x => x.id !== k.id); localStorage.setItem("narzedziaKontakty", JSON.stringify(bazaKontaktow)); renderujKontakty(); }); lista.appendChild(li); }); }
-    document.getElementById("btnDodajKontakt").addEventListener("click", () => { const n = document.getElementById("nowyKontaktNazwa").value.trim(); const num = document.getElementById("nowyKontaktNumer").value.trim(); if (!n || !num) return; bazaKontaktow.push({ id: Date.now(), nazwa: n, numer: num }); localStorage.setItem("narzedziaKontakty", JSON.stringify(bazaKontaktow)); document.getElementById("nowyKontaktNazwa").value = ""; document.getElementById("nowyKontaktNumer").value = ""; renderujKontakty(); }); renderujKontakty();
+    function renderujKontakty() { const lista = document.getElementById("listaKontaktow"); lista.innerHTML = ""; bazaKontaktow.forEach(k => { const li = document.createElement("li"); li.className = "kontakt-element"; li.innerHTML = `<div class="notatka-tekst"><strong style="color:#1e293b;">${k.nazwa}</strong><br><span style="color:#3b82f6;">${k.numer}</span></div><button class="btn-usun" style="margin-left: 10px;">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaKontaktow = bazaKontaktow.filter(x => x.id !== k.id); zapiszWChmurze("narzedziaKontakty", bazaKontaktow); renderujKontakty(); }); lista.appendChild(li); }); }
+    document.getElementById("btnDodajKontakt").addEventListener("click", () => { const n = document.getElementById("nowyKontaktNazwa").value.trim(); const num = document.getElementById("nowyKontaktNumer").value.trim(); if (!n || !num) return; bazaKontaktow.push({ id: Date.now(), nazwa: n, numer: num }); zapiszWChmurze("narzedziaKontakty", bazaKontaktow); document.getElementById("nowyKontaktNazwa").value = ""; document.getElementById("nowyKontaktNumer").value = ""; renderujKontakty(); }); 
 
-    function renderujPakowanie() { const lista = document.getElementById("listaPakowanie"); lista.innerHTML = ""; bazaPakowanie.forEach(p => { const li = document.createElement("li"); li.className = `pakowanie-element ${p.zrobione ? 'pakowanie-zrobione' : ''}`; li.innerHTML = `<div class="pakowanie-checkbox">✓</div><div class="pakowanie-tekst">${p.nazwa}</div><button class="btn-usun" style="margin-left: 10px; flex-shrink:0;">🗑️</button>`; li.addEventListener('click', (e) => { if(!e.target.classList.contains('btn-usun')) { p.zrobione = !p.zrobione; localStorage.setItem("narzedziaPakowanie", JSON.stringify(bazaPakowanie)); renderujPakowanie(); } }); li.querySelector('.btn-usun').addEventListener('click', (e) => { e.stopPropagation(); bazaPakowanie = bazaPakowanie.filter(x => x.id !== p.id); localStorage.setItem("narzedziaPakowanie", JSON.stringify(bazaPakowanie)); renderujPakowanie(); }); lista.appendChild(li); }); }
-    document.getElementById("btnDodajRzeczPakowanie").addEventListener("click", () => { const n = document.getElementById("nowaRzeczPakowanie").value.trim(); if(!n) return; bazaPakowanie.unshift({id: Date.now(), nazwa: n, zrobione: false}); localStorage.setItem("narzedziaPakowanie", JSON.stringify(bazaPakowanie)); document.getElementById("nowaRzeczPakowanie").value=""; renderujPakowanie(); });
-    document.getElementById("btnWyczyscPakowanie").addEventListener("click", () => { bazaPakowanie.forEach(p => p.zrobione = false); localStorage.setItem("narzedziaPakowanie", JSON.stringify(bazaPakowanie)); renderujPakowanie(); }); renderujPakowanie();
+    function renderujPakowanie() { const lista = document.getElementById("listaPakowanie"); lista.innerHTML = ""; bazaPakowanie.forEach(p => { const li = document.createElement("li"); li.className = `pakowanie-element ${p.zrobione ? 'pakowanie-zrobione' : ''}`; li.innerHTML = `<div class="pakowanie-checkbox">✓</div><div class="pakowanie-tekst">${p.nazwa}</div><button class="btn-usun" style="margin-left: 10px; flex-shrink:0;">🗑️</button>`; li.addEventListener('click', (e) => { if(!e.target.classList.contains('btn-usun')) { p.zrobione = !p.zrobione; zapiszWChmurze("narzedziaPakowanie", bazaPakowanie); renderujPakowanie(); } }); li.querySelector('.btn-usun').addEventListener('click', (e) => { e.stopPropagation(); bazaPakowanie = bazaPakowanie.filter(x => x.id !== p.id); zapiszWChmurze("narzedziaPakowanie", bazaPakowanie); renderujPakowanie(); }); lista.appendChild(li); }); }
+    document.getElementById("btnDodajRzeczPakowanie").addEventListener("click", () => { const n = document.getElementById("nowaRzeczPakowanie").value.trim(); if(!n) return; bazaPakowanie.unshift({id: Date.now(), nazwa: n, zrobione: false}); zapiszWChmurze("narzedziaPakowanie", bazaPakowanie); document.getElementById("nowaRzeczPakowanie").value=""; renderujPakowanie(); });
+    document.getElementById("btnWyczyscPakowanie").addEventListener("click", () => { bazaPakowanie.forEach(p => p.zrobione = false); zapiszWChmurze("narzedziaPakowanie", bazaPakowanie); renderujPakowanie(); }); 
 
-    function renderujOsiagniecia() { const lista = document.getElementById("listaOsiagniecia"); lista.innerHTML = ""; bazaOsiagniecia.sort((a,b) => new Date(b.data) - new Date(a.data)); bazaOsiagniecia.forEach(o => { const li = document.createElement("li"); li.className = "osiagniecie-element"; const dataObj = new Date(o.data); const dStr = dataObj.getDate().toString().padStart(2,'0')+"."+(dataObj.getMonth()+1).toString().padStart(2,'0')+"."+dataObj.getFullYear(); li.innerHTML = `<div class="osiagniecie-ikona">🌟</div><div class="osiagniecie-info"><span class="osiagniecie-tytul">${o.nazwa}</span><span class="osiagniecie-data">${dStr}</span></div><button class="btn-usun" style="position:relative; z-index:5;">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaOsiagniecia = bazaOsiagniecia.filter(x => x.id !== o.id); localStorage.setItem("narzedziaOsiagniecia", JSON.stringify(bazaOsiagniecia)); renderujOsiagniecia(); }); lista.appendChild(li); }); }
-    document.getElementById("btnDodajSukces").addEventListener("click", () => { const n = document.getElementById("nowySukcesNazwa").value.trim(); const d = document.getElementById("nowySukcesData").value; if(!n || !d) return; bazaOsiagniecia.push({id: Date.now(), nazwa: n, data: d}); localStorage.setItem("narzedziaOsiagniecia", JSON.stringify(bazaOsiagniecia)); document.getElementById("nowySukcesNazwa").value=""; document.getElementById("nowySukcesData").value=""; renderujOsiagniecia(); }); renderujOsiagniecia();
+    function renderujOsiagniecia() { const lista = document.getElementById("listaOsiagniecia"); lista.innerHTML = ""; bazaOsiagniecia.sort((a,b) => new Date(b.data) - new Date(a.data)); bazaOsiagniecia.forEach(o => { const li = document.createElement("li"); li.className = "osiagniecie-element"; const dataObj = new Date(o.data); const dStr = dataObj.getDate().toString().padStart(2,'0')+"."+(dataObj.getMonth()+1).toString().padStart(2,'0')+"."+dataObj.getFullYear(); li.innerHTML = `<div class="osiagniecie-ikona">🌟</div><div class="osiagniecie-info"><span class="osiagniecie-tytul">${o.nazwa}</span><span class="osiagniecie-data">${dStr}</span></div><button class="btn-usun" style="position:relative; z-index:5;">🗑️</button>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaOsiagniecia = bazaOsiagniecia.filter(x => x.id !== o.id); zapiszWChmurze("narzedziaOsiagniecia", bazaOsiagniecia); renderujOsiagniecia(); }); lista.appendChild(li); }); }
+    document.getElementById("btnDodajSukces").addEventListener("click", () => { const n = document.getElementById("nowySukcesNazwa").value.trim(); const d = document.getElementById("nowySukcesData").value; if(!n || !d) return; bazaOsiagniecia.push({id: Date.now(), nazwa: n, data: d}); zapiszWChmurze("narzedziaOsiagniecia", bazaOsiagniecia); document.getElementById("nowySukcesNazwa").value=""; document.getElementById("nowySukcesData").value=""; renderujOsiagniecia(); }); 
 
-    function aktualizujPortfel() { document.getElementById("sumaPunktow").innerText = mojePunkty; document.getElementById("sumaPunktowDziecko").innerText = mojePunkty; localStorage.setItem("gryPunkty", mojePunkty); }
+    function aktualizujPortfel() { document.getElementById("sumaPunktow").innerText = mojePunkty; document.getElementById("sumaPunktowDziecko").innerText = mojePunkty; zapiszWChmurze("gryPunkty", mojePunkty); }
     function renderujOczekujace() { const s = document.getElementById("sekcjaOczekujace"); const l = document.getElementById("listaOczekujacych"); if (oczekujaceZadania.length === 0) { s.style.display = "none"; } else { s.style.display = "block"; l.innerHTML = ""; oczekujaceZadania.forEach(ocz => { const li = document.createElement("li"); li.style.borderLeftColor = "#f59e0b"; li.innerHTML = `<div class="akcja-info"><span class="akcja-nazwa">${ocz.nazwa}</span><span class="akcja-punkty" style="color:#f59e0b; background:#fef3c7;">+${ocz.punkty} ⭐</span></div><div style="display:flex; gap:5px;"><button class="btn-wykonaj" style="background-color:#f59e0b;">✔️</button><button class="btn-usun">❌</button></div>`; li.querySelector('.btn-wykonaj').addEventListener('click', () => { mojePunkty += ocz.punkty; aktualizujPortfel(); usunZOczekujacych(ocz.id); alert(`Zatwierdzono! +${ocz.punkty} ⭐`); }); li.querySelector('.btn-usun').addEventListener('click', () => { usunZOczekujacych(ocz.id); }); l.appendChild(li); }); } }
-    function usunZOczekujacych(id) { oczekujaceZadania = oczekujaceZadania.filter(o => o.id !== id); localStorage.setItem("gryOczekujace", JSON.stringify(oczekujaceZadania)); renderujOczekujace(); }
-    function renderujZadania() { document.getElementById("listaZadan").innerHTML = ""; bazaZadan.forEach(z => { const li = document.createElement("li"); li.innerHTML = `<div class="akcja-info"><span class="akcja-nazwa">${z.nazwa}</span><span class="akcja-punkty">+${z.punkty} ⭐</span></div><div style="display:flex; gap:5px;"><button class="btn-wykonaj">✅</button><button class="btn-usun">🗑️</button></div>`; li.querySelector('.btn-wykonaj').addEventListener('click', () => { mojePunkty += z.punkty; aktualizujPortfel(); alert(`Dodano ${z.punkty} ⭐!`); }); li.querySelector('.btn-usun').addEventListener('click', () => { bazaZadan = bazaZadan.filter(x => x.id !== z.id); localStorage.setItem("gryZadania", JSON.stringify(bazaZadan)); renderujZadania(); renderujWidokDziecka(); }); document.getElementById("listaZadan").appendChild(li); }); }
-    function renderujNagrody() { document.getElementById("listaNagrod").innerHTML = ""; bazaNagrod.forEach(n => { const li = document.createElement("li"); li.innerHTML = `<div class="akcja-info"><span class="akcja-nazwa">${n.nazwa}</span><span class="akcja-punkty akcja-koszt">-${n.koszt} ⭐</span></div><div><button class="btn-usun">🗑️</button></div>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaNagrod = bazaNagrod.filter(x => x.id !== n.id); localStorage.setItem("gryNagrody", JSON.stringify(bazaNagrod)); renderujNagrody(); renderujWidokDziecka(); }); document.getElementById("listaNagrod").appendChild(li); }); }
-    function renderujWidokDziecka() { aktualizujPortfel(); aktualizujKonto(); document.getElementById("listaZadanDziecko").innerHTML = ""; bazaZadan.forEach(z => { const li = document.createElement("li"); li.innerHTML = `<div class="akcja-info"><span class="akcja-nazwa">${z.nazwa}</span><span class="akcja-punkty">+${z.punkty} ⭐</span></div><button class="btn-wykonaj" style="padding: 12px; background-color:#f59e0b;">📤 Zgłoś!</button>`; li.querySelector('.btn-wykonaj').addEventListener('click', () => { oczekujaceZadania.push({ id: Date.now(), nazwa: z.nazwa, punkty: z.punkty }); localStorage.setItem("gryOczekujace", JSON.stringify(oczekujaceZadania)); renderujOczekujace(); alert(`Wysłano do sprawdzenia!`); }); document.getElementById("listaZadanDziecko").appendChild(li); }); document.getElementById("listaNagrodDziecko").innerHTML = ""; bazaNagrod.forEach(n => { const s = mojePunkty >= n.koszt; const li = document.createElement("li"); li.innerHTML = `<div class="akcja-info"><span class="akcja-nazwa">${n.nazwa}</span><span class="akcja-koszt">-${n.koszt} ⭐</span></div><button class="btn-kup" style="padding: 12px; border-radius:12px; ${s ? 'background-color: #ec4899;' : 'background-color: #cbd5e1; cursor: not-allowed;'}">${s ? '🎁 Wybieram!' : '🔒 Za mało ⭐'}</button>`; li.querySelector('.btn-kup').addEventListener('click', () => { if (s) { mojePunkty -= n.koszt; aktualizujPortfel(); renderujWidokDziecka(); alert(`Wybrałeś: ${n.nazwa}!`); } else { alert("Za mało punktów!"); } }); document.getElementById("listaNagrodDziecko").appendChild(li); }); }
-    document.getElementById("btnDodajZadanie").addEventListener("click", () => { const n = document.getElementById("noweZadanieNazwa").value.trim(); const p = parseInt(document.getElementById("noweZadaniePunkty").value); if(n&&p) { bazaZadan.push({id:Date.now(), nazwa:n, punkty:p}); localStorage.setItem("gryZadania", JSON.stringify(bazaZadan)); document.getElementById("noweZadanieNazwa").value=""; document.getElementById("noweZadaniePunkty").value=""; renderujZadania(); }});
-    document.getElementById("btnDodajNagrode").addEventListener("click", () => { const n = document.getElementById("nowaNagrodaNazwa").value.trim(); const k = parseInt(document.getElementById("nowaNagrodaKoszt").value); if(n&&k) { bazaNagrod.push({id:Date.now(), nazwa:n, koszt:k}); localStorage.setItem("gryNagrody", JSON.stringify(bazaNagrod)); document.getElementById("nowaNagrodaNazwa").value=""; document.getElementById("nowaNagrodaKoszt").value=""; renderujNagrody(); }});
-    aktualizujPortfel(); renderujZadania(); renderujNagrody(); renderujOczekujace();
+    function usunZOczekujacych(id) { oczekujaceZadania = oczekujaceZadania.filter(o => o.id !== id); zapiszWChmurze("gryOczekujace", oczekujaceZadania); renderujOczekujace(); }
+    function renderujZadania() { document.getElementById("listaZadan").innerHTML = ""; bazaZadan.forEach(z => { const li = document.createElement("li"); li.innerHTML = `<div class="akcja-info"><span class="akcja-nazwa">${z.nazwa}</span><span class="akcja-punkty">+${z.punkty} ⭐</span></div><div style="display:flex; gap:5px;"><button class="btn-wykonaj">✅</button><button class="btn-usun">🗑️</button></div>`; li.querySelector('.btn-wykonaj').addEventListener('click', () => { mojePunkty += z.punkty; aktualizujPortfel(); alert(`Dodano ${z.punkty} ⭐!`); }); li.querySelector('.btn-usun').addEventListener('click', () => { bazaZadan = bazaZadan.filter(x => x.id !== z.id); zapiszWChmurze("gryZadania", bazaZadan); renderujZadania(); renderujWidokDziecka(); }); document.getElementById("listaZadan").appendChild(li); }); }
+    function renderujNagrody() { document.getElementById("listaNagrod").innerHTML = ""; bazaNagrod.forEach(n => { const li = document.createElement("li"); li.innerHTML = `<div class="akcja-info"><span class="akcja-nazwa">${n.nazwa}</span><span class="akcja-punkty akcja-koszt">-${n.koszt} ⭐</span></div><div><button class="btn-usun">🗑️</button></div>`; li.querySelector('.btn-usun').addEventListener('click', () => { bazaNagrod = bazaNagrod.filter(x => x.id !== n.id); zapiszWChmurze("gryNagrody", bazaNagrod); renderujNagrody(); renderujWidokDziecka(); }); document.getElementById("listaNagrod").appendChild(li); }); }
+    function renderujWidokDziecka() { aktualizujPortfel(); aktualizujKonto(); document.getElementById("listaZadanDziecko").innerHTML = ""; bazaZadan.forEach(z => { const li = document.createElement("li"); li.innerHTML = `<div class="akcja-info"><span class="akcja-nazwa">${z.nazwa}</span><span class="akcja-punkty">+${z.punkty} ⭐</span></div><button class="btn-wykonaj" style="padding: 12px; background-color:#f59e0b;">📤 Zgłoś!</button>`; li.querySelector('.btn-wykonaj').addEventListener('click', () => { oczekujaceZadania.push({ id: Date.now(), nazwa: z.nazwa, punkty: z.punkty }); zapiszWChmurze("gryOczekujace", oczekujaceZadania); renderujOczekujace(); alert(`Wysłano do sprawdzenia!`); }); document.getElementById("listaZadanDziecko").appendChild(li); }); document.getElementById("listaNagrodDziecko").innerHTML = ""; bazaNagrod.forEach(n => { const s = mojePunkty >= n.koszt; const li = document.createElement("li"); li.innerHTML = `<div class="akcja-info"><span class="akcja-nazwa">${n.nazwa}</span><span class="akcja-koszt">-${n.koszt} ⭐</span></div><button class="btn-kup" style="padding: 12px; border-radius:12px; ${s ? 'background-color: #ec4899;' : 'background-color: #cbd5e1; cursor: not-allowed;'}">${s ? '🎁 Wybieram!' : '🔒 Za mało ⭐'}</button>`; li.querySelector('.btn-kup').addEventListener('click', () => { if (s) { mojePunkty -= n.koszt; aktualizujPortfel(); renderujWidokDziecka(); alert(`Wybrałeś: ${n.nazwa}!`); } else { alert("Za mało punktów!"); } }); document.getElementById("listaNagrodDziecko").appendChild(li); }); }
+    document.getElementById("btnDodajZadanie").addEventListener("click", () => { const n = document.getElementById("noweZadanieNazwa").value.trim(); const p = parseInt(document.getElementById("noweZadaniePunkty").value); if(n&&p) { bazaZadan.push({id:Date.now(), nazwa:n, punkty:p}); zapiszWChmurze("gryZadania", bazaZadan); document.getElementById("noweZadanieNazwa").value=""; document.getElementById("noweZadaniePunkty").value=""; renderujZadania(); }});
+    document.getElementById("btnDodajNagrode").addEventListener("click", () => { const n = document.getElementById("nowaNagrodaNazwa").value.trim(); const k = parseInt(document.getElementById("nowaNagrodaKoszt").value); if(n&&k) { bazaNagrod.push({id:Date.now(), nazwa:n, koszt:k}); zapiszWChmurze("gryNagrody", bazaNagrod); document.getElementById("nowaNagrodaNazwa").value=""; document.getElementById("nowaNagrodaKoszt").value=""; renderujNagrody(); }});
 
-
-    // ==========================================
-    // 4. POTĘŻNY ASYSTENT D@NIEL
-    // ==========================================
     const oknoCzatu = document.getElementById("kontenerWiadomosci");
 
     function renderujCzat() {
@@ -449,7 +594,7 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("btnWyslijWiadomosc").addEventListener("click", () => {
         const input = document.getElementById("inputWiadomosci"); const tekst = input.value.trim(); if (!tekst) return;
         
-        bazaCzatu.push({ autor: "Ty", moja: true, tekst: tekst }); localStorage.setItem("narzedziaAsystent", JSON.stringify(bazaCzatu)); 
+        bazaCzatu.push({ autor: "Ty", moja: true, tekst: tekst }); zapiszWChmurze("narzedziaAsystent", bazaCzatu); 
         input.value = ""; renderujCzat();
 
         const divPisze = document.createElement("div"); divPisze.className = "dymek-czatu dymek-inny";
@@ -482,13 +627,13 @@ document.addEventListener("DOMContentLoaded", function() {
                     const a = zapytanie.includes("zdał") || zapytanie.includes("wyłączył") ? "🛑 Zdał sprzęt" : "▶️ Start";
                     const liczby = zapytanie.match(/\d+/); const c = liczby ? liczby[0] : "";
                     const d = new Date(); const dStr = d.getDate().toString().padStart(2,'0') + "." + (d.getMonth()+1).toString().padStart(2,'0') + "." + d.getFullYear(); const tStr = d.getHours().toString().padStart(2,'0')+":"+d.getMinutes().toString().padStart(2,'0');
-                    if(typeof bazaEkrany !== 'undefined') { bazaEkrany.unshift({ id: Date.now(), urzadzenie: u, akcja: a, czas: c, data: dStr, godzina: tStr }); localStorage.setItem("narzedziaEkrany", JSON.stringify(bazaEkrany)); if(typeof renderujEkrany === "function") renderujEkrany(); }
+                    if(typeof bazaEkrany !== 'undefined') { bazaEkrany.unshift({ id: Date.now(), urzadzenie: u, akcja: a, czas: c, data: dStr, godzina: tStr }); zapiszWChmurze("narzedziaEkrany", bazaEkrany); if(typeof renderujEkrany === "function") renderujEkrany(); }
                     odpTresc = `Zanotowano czas przed ekranem! Urządzenie: ${u}, Akcja: ${a}${c ? ' ('+c+' min)' : ''}. Widać postępy w cyfrowym detoksie! 🛡️`;
                 }
                 else if (zapytanie.includes("karmienie") || zapytanie.includes("zjadł") || zapytanie.includes("wypił")) {
                     const liczby = zapytanie.match(/\d+/); let typ = zapytanie.includes("lew") ? "Lewa Pierś" : (zapytanie.includes("praw") ? "Prawa Pierś" : "Butelka"); let ilosc = liczby ? liczby[0] : "";
                     const now = new Date(); const d = now.toISOString().split('T')[0]; const c = now.toTimeString().substring(0,5);
-                    bazaKarmienie.unshift({ id: Date.now(), typ: typ, ilosc: ilosc, data: d, czas: c }); localStorage.setItem("narzedziaKarmienie", JSON.stringify(bazaKarmienie)); renderujKarmienie();
+                    bazaKarmienie.unshift({ id: Date.now(), typ: typ, ilosc: ilosc, data: d, czas: c }); zapiszWChmurze("narzedziaKarmienie", bazaKarmienie); renderujKarmienie();
                     odpTresc = `Słodkiego apetytu! 🍼 Zanotowałem karmienie (${typ} ${ilosc ? ilosc+'ml' : ''}) o godzinie ${c}.`;
                 }
                 else if (zapytanie.includes("wydał") || zapytanie.includes("kupił") || zapytanie.includes("kosztował") || zapytanie.includes("wydatek")) {
@@ -497,7 +642,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         const kwota = parseFloat(liczby[0]); const opisTytulu = tekst.replace(liczby[0], "").replace(/wydałem|wydałam|kupiłem|kupiłam|kosztowało|na|zł|wydatek/gi, "").trim() || "Zakupy (z czatu)";
                         const dStr = new Date().toLocaleString('pl-PL', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
                         historiaFinansow.unshift({ opis: opisTytulu.charAt(0).toUpperCase() + opisTytulu.slice(1), kwota: -kwota, data: dStr });
-                        saldoFinansow -= kwota; localStorage.setItem("gryHistoriaFinansow", JSON.stringify(historiaFinansow)); aktualizujKonto(); renderujTransakcje();
+                        saldoFinansow -= kwota; zapiszWChmurze("gryHistoriaFinansow", historiaFinansow); aktualizujKonto(); renderujTransakcje();
                         odpTresc = `Zanotowano! Odjąłem <strong>${kwota} zł</strong> ze Skarbonki na "${opisTytulu}". Obecne saldo to ${saldoFinansow.toFixed(2)} zł. 💸`;
                     } else { odpTresc = `Zrozumiałem, że to wydatek, ale nie podałeś kwoty! Wpisz np. "Wydałem 15 zł na lody".`; }
                 }
@@ -510,13 +655,13 @@ document.addEventListener("DOMContentLoaded", function() {
                     const lek = zapytanie.includes("ibuprofen") ? "Ibuprofen" : (zapytanie.includes("paracetamol") ? "Paracetamol" : "Inny lek");
                     const liczby = zapytanie.match(/\d+(\.\d+)?/); const dawka = liczby ? liczby[0] + " ml" : "Nieznana dawka"; const d = new Date(); 
                     bazaZdarzen.unshift({ typ: lek, lek: `💊 ${lek} (z czatu)`, dawka: dawka, czasWpisu: d.getTime(), godzinaWyswietlana: d.getHours().toString().padStart(2,'0')+":"+d.getMinutes().toString().padStart(2,'0') }); 
-                    localStorage.setItem("medHistoria", JSON.stringify(bazaZdarzen)); odswiezZdarzenia();
+                    zapiszWChmurze("medHistoria", bazaZdarzen); odswiezZdarzenia();
                     odpTresc = `Zanotowałem w Apteczce! Podałeś <strong>${lek}</strong> w dawce <strong>${dawka}</strong> o godzinie ${d.getHours().toString().padStart(2,'0')+":"+d.getMinutes().toString().padStart(2,'0')}. Zdrowia! 🩺`;
                 }
                 else if (zapytanie.includes("sukces") || zapytanie.includes("osiągnięcie")) {
                     const nazwaSukcesu = tekst.replace(/dodaj sukces/i, "").replace(/zapisz sukces/i, "").replace(/osiągnięcie/i, "").trim() || "Nowy sukces dziecka!";
                     const d = new Date().toISOString().split('T')[0];
-                    bazaOsiagniecia.push({id: Date.now(), nazwa: nazwaSukcesu.charAt(0).toUpperCase() + nazwaSukcesu.slice(1), data: d}); localStorage.setItem("narzedziaOsiagniecia", JSON.stringify(bazaOsiagniecia)); renderujOsiagniecia();
+                    bazaOsiagniecia.push({id: Date.now(), nazwa: nazwaSukcesu.charAt(0).toUpperCase() + nazwaSukcesu.slice(1), data: d}); zapiszWChmurze("narzedziaOsiagniecia", bazaOsiagniecia); renderujOsiagniecia();
                     odpTresc = `Wielkie brawa! 🥳 Zapisano w Osiągnięciach: <strong>"${nazwaSukcesu}"</strong> z dzisiejszą datą. Oby tak dalej!`;
                 }
                 else if (zapytanie.includes("rozmiar")) {
@@ -526,7 +671,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         const d = new Date(); const dataStr = d.getDate().toString().padStart(2,'0') + "." + (d.getMonth()+1).toString().padStart(2,'0') + "." + d.getFullYear(); 
                         let nowyRozmiar = { id: Date.now(), wzrost: "", ubranie: "", but: "", data: dataStr };
                         if(rodzaj === "but") nowyRozmiar.but = wartosc; else if (rodzaj === "wzrost") nowyRozmiar.wzrost = wartosc; else nowyRozmiar.ubranie = wartosc;
-                        bazaRozmiary.unshift(nowyRozmiar); localStorage.setItem("narzedziaRozmiary", JSON.stringify(bazaRozmiary)); renderujRozmiary();
+                        bazaRozmiary.unshift(nowyRozmiar); zapiszWChmurze("narzedziaRozmiary", bazaRozmiary); renderujRozmiary();
                         odpTresc = `Zaktualizowałem garderobę! Twój nowy rozmiar to: <strong>${rodzaj} ${wartosc}</strong>. 👕 Zapisałem z dzisiejszą datą.`;
                     } else { odpTresc = "Jaki to rozmiar? Wpisz np. 'Rozmiar buta 28'."; }
                 }
@@ -534,12 +679,12 @@ document.addEventListener("DOMContentLoaded", function() {
                     const wydarzenie = tekst.replace(/dodaj do kalendarza/i, "").replace(/zaplanuj w kalendarzu/i, "").replace(/w kalendarzu/i, "").replace(/do kalendarza/i, "").trim();
                     const dStr = new Date().toISOString().split('T')[0];
                     bazaKalendarz.push({ id: Date.now(), tytul: wydarzenie.charAt(0).toUpperCase() + wydarzenie.slice(1), data: dStr, czas: "", dataPełna: `${dStr}T00:00` });
-                    localStorage.setItem("narzedziaKalendarz", JSON.stringify(bazaKalendarz)); renderujKalendarz();
+                    zapiszWChmurze("narzedziaKalendarz", bazaKalendarz); renderujKalendarz();
                     odpTresc = `Zrobione! Dodałem <strong>"${wydarzenie}"</strong> do Twojego Kalendarza na dzisiaj. Możesz wejść tam i zmienić datę. 📅`;
                 }
                 else if (zapytanie.startsWith("zapisz ") || zapytanie.startsWith("przypomnij ")) {
                     const notatka = tekst.replace(/zapisz /i, "").replace(/przypomnij /i, "").trim();
-                    bazaNotatek.unshift({ id: Date.now(), tekst: notatka }); localStorage.setItem("narzedziaNotatki", JSON.stringify(bazaNotatek)); renderujNotatki();
+                    bazaNotatek.unshift({ id: Date.now(), tekst: notatka }); zapiszWChmurze("narzedziaNotatki", bazaNotatek); renderujNotatki();
                     odpTresc = `Jasne! Zapisałem na żółtej karteczce: <strong>"${notatka}"</strong>. Znajdziesz to w module Notatki. 📝`;
                 }
                 else if ((zapytanie.includes("dodaj") || zapytanie.includes("daj")) && zapytanie.includes("punkt")) {
@@ -572,9 +717,10 @@ document.addEventListener("DOMContentLoaded", function() {
             
             let nazwaBota = czyPremiumPelne ? "Asystent D@niel (Premium) 👑" : (czyTrial ? "Asystent (Próbne Premium)" : "Asystent D@niel 🤖");
             bazaCzatu.push({ autor: nazwaBota, moja: false, tekst: odpTresc.replace(/\n/g, "<br>") }); 
-            localStorage.setItem("narzedziaAsystent", JSON.stringify(bazaCzatu)); renderujCzat();
+            zapiszWChmurze("narzedziaAsystent", bazaCzatu); renderujCzat();
         }, 1500); 
     });
 
-    document.getElementById("inputWiadomosci").addEventListener("keypress", function(event) { if (event.key === "Enter") { event.preventDefault(); document.getElementById("btnWyslijWiadomosc").click(); } });
+    // ZAINICJOWANIE WIDOKÓW STARTOWYCH (Dla offline'u zanim Firebase odpowie)
+    odswiezWszystkieWidoki();
 });
