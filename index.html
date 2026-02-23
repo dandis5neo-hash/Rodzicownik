@@ -30,10 +30,37 @@
                 <input type="email" id="loginEmail" placeholder="Adres e-mail" style="margin-bottom: 10px; font-weight: bold; text-align: center;">
                 <input type="password" id="loginHaslo" placeholder="Hasło" style="margin-bottom: 20px; font-weight: bold; text-align: center; letter-spacing: 2px;">
                 
+                <div style="margin-bottom: 20px; text-align: left; font-size: 11px; color: #64748b; line-height: 1.4;">
+                    <label style="display: flex; align-items: flex-start; gap: 8px; font-weight: normal; margin-top: 0; cursor: pointer;">
+                        <input type="checkbox" id="zgodaRejestracja" style="width: auto; margin: 0; margin-top: 2px; flex-shrink: 0; transform: scale(1.2);">
+                        <span>Akceptuję <a href="#" id="linkRegulaminLogowanie" style="color: #3b82f6; text-decoration: underline;">Regulamin i Politykę Prywatności</a>. Rozumiem, że moje dane będą przechowywane na zabezpieczonych serwerach w chmurze (Google Firebase).</span>
+                    </label>
+                </div>
+
                 <button id="btnZaloguj" class="btn-akcja" style="background-color: #3b82f6;">🔒 Zaloguj się</button>
                 <button id="btnZarejestruj" class="btn-wroc" style="width: 100%; justify-content: center; margin-top: 15px;">Nie masz konta? Zarejestruj się</button>
                 
                 <button id="btnResetHasla" class="btn-wroc" style="width: 100%; justify-content: center; margin-top: 0px; font-size: 13px; color: #94a3b8;">Zapomniałeś hasła? Odzyskaj je tutaj</button>
+            </div>
+        </main>
+
+        <main id="ekranRegulamin" class="ekran ukryty no-print" style="background-color: #f8fafc; min-height: 100vh;">
+            <button id="btnWrocRegulamin" class="btn-wroc" style="background: transparent;"><span class="wroc-ikona">🔙</span> Wróć</button>
+            
+            <div class="card" style="font-size: 12px; color: #475569; line-height: 1.6; padding-bottom: 30px;">
+                <h3 style="color: #1e293b; font-size: 18px; margin-bottom: 20px;">Regulamin i Polityka Prywatności</h3>
+                
+                <p><strong>1. Informacje ogólne i kontakt</strong><br>
+                Aplikacja "Rodzicownik" jest narzędziem edukacyjno-organizacyjnym. Twórcą i administratorem aplikacji jest Daniel Ćwiertniak, zamieszkały pod adresem: Os. Bohaterów Września 12/46, 31-621 Kraków. Oficjalny kontakt z administratorem odbywa się za pośrednictwem wiadomości na fanpage'u "Rodzicownik" w mediach społecznościowych.</p>
+                
+                <p><strong>2. Przetwarzanie danych w Chmurze (Polityka Prywatności)</strong><br>
+                W celu zapewnienia dostępu do danych z wielu urządzeń oraz zabezpieczenia ich przed utratą, aplikacja korzysta z architektury chmurowej. Wprowadzane informacje (w tym adres e-mail, szyfrowane hasła, notatki, wymiary czy wpisy medyczne) są bezpiecznie przechowywane na serwerach zewnętrznych usługi Firebase, dostarczanej przez firmę Google LLC. Administrator deklaruje, że nie udostępnia, nie sprzedaje ani nie wykorzystuje tych danych w zewnętrznych celach marketingowych.</p>
+                
+                <p><strong>3. Ostrzeżenie Medyczne</strong><br>
+                Aplikacja nie jest certyfikowanym wyrobem medycznym. Funkcje takie jak Apteczka, wbudowane kalkulatory dawek (np. dla ibuprofenu/paracetamolu) oraz wsparcie Asystenta AI mają charakter wyłącznie orientacyjny i edukacyjny. Zawsze należy postępować zgodnie z zaleceniami na ulotce dołączonej do leku lub skonsultować się z lekarzem specjalistą.</p>
+                
+                <p><strong>4. Produkty Cyfrowe (Usługa Premium)</strong><br>
+                Wersja Premium jest produktem w formie treści cyfrowej, który nie jest zapisany na nośniku materialnym. Zgodnie z ustawą o prawach konsumenta, ze względu na fakt natychmiastowego dostarczenia dostępu (po wpisaniu kodu aktywacyjnego), Konsument zrzeka się ustawowego prawa do odstąpienia od umowy w terminie 14 dni od jej zawarcia. Transakcje wspierają dalszy rozwój projektu.</p>
             </div>
         </main>
 
@@ -115,13 +142,16 @@
             </div>
 
             <footer class="nota-prawna" style="margin-bottom: 30px;">
-                <strong>© 2026 Rodzicownik | Autor: Daniel Ćw.<br>Wszelkie prawa zastrzeżone.</strong>
+                <strong>© 2026 Rodzicownik | Twórca: Daniel Ćw.<br>Wszelkie prawa zastrzeżone.</strong>
                 <p style="text-align: justify; margin-top: 10px; line-height: 1.5; font-size: 10px; color: #64748b;">
                     Aplikacja ma charakter wyłącznie pomocniczy i edukacyjny.<br><br>
                     <strong>1. Wyłączenie odp. medycznej:</strong> Moduł Apteczki, kalkulator dawek leków oraz asystent AI nie zastępują porady lekarskiej. Dawki są orientacyjne. Konsultuj się z pediatrą.<br><br>
-                    <strong>2. Bezpieczeństwo i Chmura:</strong> Twoje dane są chronione i bezpiecznie przechowywane w zaufanej chmurze (Google Firebase). Hasła dostępowe są w pełni zaszyfrowane. Taki model zapisu gwarantuje bezpieczeństwo przed utratą danych i umożliwia logowanie oraz podgląd z kilku urządzeń na raz (np. na telefonie Mamy i Taty).<br><br>
-                    <strong>3. Instalacja Aplikacji:</strong> Najlepiej korzystać z głównej przeglądarki systemu (Chrome/Safari). Aby zyskać pełną funkcjonalność (brak paska przeglądarki), dodaj aplikację do ekranu głównego.
+                    <strong>2. Bezpieczeństwo i Chmura:</strong> Twoje dane są chronione i bezpiecznie przechowywane w zaufanej chmurze (Google Firebase). Hasła są szyfrowane.<br><br>
+                    <strong>3. Instalacja Aplikacji:</strong> Aby zyskać pełną funkcjonalność (brak paska przeglądarki), dodaj aplikację do ekranu głównego.
                 </p>
+                <div style="margin-top: 15px; margin-bottom: 10px;">
+                    <a href="#" id="linkRegulaminFooter" style="color: #475569; font-weight: bold; text-decoration: underline; font-size: 12px;">📄 Przeczytaj pełny Regulamin</a>
+                </div>
                 <button id="btnInstallPWA" class="btn-akcja" style="background: #3b82f6; padding: 12px; font-size: 13px; margin-top: 10px; display: none; width: 100%;">📱 Zainstaluj aplikację na telefonie</button>
             </footer>
         </main>
@@ -535,13 +565,20 @@
                     <p style="font-size: 14px; color: #64748b; margin-bottom: 15px;">Wyślij <strong>20 PLN</strong> na poniższy numer telefonu. <strong>W tytule przelewu wpisz swój własny numer telefonu!</strong></p>
                     <span style="font-size: 32px; font-weight: 900; color: #e11d48; letter-spacing: 2px; display: block; text-align: center;">577 610 376</span>
                     <span style="display: block; font-size: 14px; color: #475569; margin-top: 10px; text-align: center;">Odbiorca: Daniel Ćw.</span>
-                    <p style="font-size: 11px; color: #64748b; margin-top: 15px; font-style: italic; text-align: center;">* Jest to czasowa opcja manualnego zakupu (dostęp na zawsze), mająca na celu wsparcie niezależnego rozwoju aplikacji.</p>
                 </div>
                 <div style="background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin: 0 0 30px 0; border: 2px solid #8b5cf6; text-align: left;">
                     <p style="margin-top: 0; font-weight: bold; color: #8b5cf6;">Krok 2: Kod Aktywacyjny</p>
                     <p style="font-size: 14px; color: #64748b; margin-bottom: 15px;">Gdy otrzymam wpłatę, odeślę Ci SMS-em jednorazowy kod. Wpisz go tutaj:</p>
                     <input type="text" id="inputKodAktywacyjny" placeholder="Wpisz kod..." style="text-align: center; font-weight: bold; letter-spacing: 2px; font-size: 18px; text-transform: uppercase; background-color: #f5f3ff; border: 1px solid #ddd6fe;">
-                    <button id="btnAktywujPremium" class="btn-premium" style="margin-top: 15px;">🚀 Aktywuj Premium</button>
+                    
+                    <div style="margin-top: 15px; margin-bottom: 15px; text-align: left; font-size: 11px; color: #64748b; line-height: 1.4;">
+                        <label style="display: flex; align-items: flex-start; gap: 8px; font-weight: normal; margin-top: 0; cursor: pointer;">
+                            <input type="checkbox" id="zgodaPremium" style="width: auto; margin: 0; margin-top: 2px; flex-shrink: 0; transform: scale(1.2);">
+                            <span>Akceptuję Regulamin. Rozumiem, że wpisując kod otrzymuję natychmiastowy dostęp do produktu cyfrowego (Premium). Zgadzam się na to i przyjmuję do wiadomości, że tym samym <strong>tracę prawo do zwrotu i odstąpienia od umowy w ciągu 14 dni</strong>.</span>
+                        </label>
+                    </div>
+
+                    <button id="btnAktywujPremium" class="btn-premium">🚀 Aktywuj Premium</button>
                 </div>
             </div>
             <br><br><br>

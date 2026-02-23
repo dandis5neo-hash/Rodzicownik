@@ -25,9 +25,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // 01. SILNIK SYNCHRONIZACJI Z CHMURĄ
     // ==========================================
     function zapiszWChmurze(klucz, dane) {
-        // 1. Zapis lokalny dla trybu offline
         localStorage.setItem(klucz, typeof dane === 'object' ? JSON.stringify(dane) : dane);
-        // 2. Zapis w chmurze
         if (currentUserUid) {
             database.ref('users/' + currentUserUid + '/' + klucz).set(dane);
         }
@@ -92,23 +90,45 @@ document.addEventListener("DOMContentLoaded", function() {
     let bazaSzczepien = JSON.parse(localStorage.getItem("narzedziaSzczepienia")) || [];
     let bazaEkrany = JSON.parse(localStorage.getItem("narzedziaEkrany")) || [];
 
-    // ==========================================
-    // LOGIKA AUTORYZACJI FIREBASE (AUTH STATE)
-    // ==========================================
     const ekranLogowania = document.getElementById("ekranLogowania");
     const pasekDolny = document.getElementById("pasekDolny");
     const ekranStart = document.getElementById("ekranStart");
+    const ekranRegulamin = document.getElementById("ekranRegulamin");
 
+    const wszystkieEkrany = [ 
+        ekranStart, document.getElementById("ekranProfil"), document.getElementById("ekranZdrowie"), 
+        document.getElementById("ekranObowiazki"), document.getElementById("ekranFinanse"), document.getElementById("ekranNotatki"), 
+        document.getElementById("ekranKalendarz"), document.getElementById("ekranKontakty"), document.getElementById("ekranStoper"), 
+        document.getElementById("ekranRozmiary"), document.getElementById("ekranCytaty"), document.getElementById("ekranPlan"), 
+        document.getElementById("ekranPosilki"), document.getElementById("ekranSejf"), document.getElementById("ekranAsystent"), 
+        document.getElementById("ekranPakowanie"), document.getElementById("ekranOsiagniecia"), 
+        document.getElementById("ekranPremium"), document.getElementById("ekranBlik"), document.getElementById("ekranKarmienie"), 
+        document.getElementById("ekranBilans"), document.getElementById("ekranEkrany"), document.getElementById("ekranBackup"), document.getElementById("ekranDziecka"),
+        ekranLogowania, ekranRegulamin
+    ];
+
+    function czyscPasekNawigacji() { btnNavStart.classList.remove("aktywny"); btnNavKalendarz.classList.remove("aktywny"); btnNavProfil.classList.remove("aktywny"); }
+    function pokazEkran(ekranDoPokazania, tytul) {
+        wszystkieEkrany.forEach(e => { if(e) e.classList.add("ukryty"); }); 
+        if(ekranDoPokazania) ekranDoPokazania.classList.remove("ukryty");
+        document.getElementById("tytulAplikacji").innerText = tytul;
+        if (ekranDoPokazania === document.getElementById("ekranDziecka") || ekranDoPokazania === document.getElementById("ekranPremium") || ekranDoPokazania === document.getElementById("ekranBlik") || ekranDoPokazania === ekranLogowania || ekranDoPokazania === ekranRegulamin) {
+            pasekDolny.classList.add("ukryty"); 
+        } else {
+            pasekDolny.classList.remove("ukryty");
+        }
+    }
+
+    // ==========================================
+    // LOGIKA AUTORYZACJI FIREBASE (AUTH STATE)
+    // ==========================================
     auth.onAuthStateChanged(user => {
         if (user) {
             currentUserUid = user.uid;
-            console.log("Zalogowano! Synchronizacja z bazą Firebase...");
             
-            // POBIERANIE DANYCH Z CHMURY
             database.ref('users/' + currentUserUid).once('value').then(snapshot => {
                 const daneZChmury = snapshot.val();
                 if (daneZChmury) {
-                    // Nadpisujemy lokalne zmienne danymi z serwera
                     if (daneZChmury.rodzicownikPremium) czyPremiumPelne = (daneZChmury.rodzicownikPremium === "true");
                     czyPremium = czyPremiumPelne || czyTrial;
                     if (daneZChmury.medBazaProfili) bazaProfili = daneZChmury.medBazaProfili;
@@ -139,7 +159,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     if (daneZChmury.narzedziaEkrany) bazaEkrany = daneZChmury.narzedziaEkrany;
                     if (daneZChmury.narzedziaAsystent) bazaCzatu = daneZChmury.narzedziaAsystent;
                     
-                    // Bezpieczna kopia w localStorage
                     Object.keys(daneZChmury).forEach(key => {
                         let v = daneZChmury[key];
                         localStorage.setItem(key, typeof v === 'object' ? JSON.stringify(v) : v);
@@ -147,7 +166,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     
                     odswiezWszystkieWidoki();
                 } else {
-                    // Pierwsze logowanie konta -> Wypychamy obecne lokalne dane do chmury!
                     zapiszLokalneDaneDoChmury();
                 }
             });
@@ -209,7 +227,6 @@ document.addEventListener("DOMContentLoaded", function() {
         aktualizujPortfel(); renderujOczekujace(); renderujZadania(); renderujNagrody(); renderujCzat();
     }
 
-    // Listenery Formularza Logowania
     document.getElementById("btnZaloguj").addEventListener("click", () => {
         const email = document.getElementById("loginEmail").value.trim(); const pass = document.getElementById("loginHaslo").value.trim();
         if(!email || !pass) return alert("Podaj adres e-mail i hasło!");
@@ -219,6 +236,12 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("btnZarejestruj").addEventListener("click", () => {
         const email = document.getElementById("loginEmail").value.trim(); const pass = document.getElementById("loginHaslo").value.trim();
         if(!email || !pass) return alert("Podaj adres e-mail i hasło do rejestracji!");
+        
+        // WERYFIKACJA REGULAMINU
+        if(!document.getElementById("zgodaRejestracja").checked) {
+            return alert("Aby założyć konto, musisz zaakceptować Regulamin i Politykę Prywatności!");
+        }
+
         auth.createUserWithEmailAndPassword(email, pass).then(() => { alert("Konto zostało utworzone!"); }).catch(error => { alert("Błąd: " + error.message); });
     });
 
@@ -234,30 +257,22 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("btnWyloguj").addEventListener("click", () => { if(confirm("Na pewno chcesz się wylogować?")) { auth.signOut(); } });
     }
 
-    // ==========================================
-    // 1. ZARZĄDZANIE NAWIGACJĄ I EKRANAMI
-    // ==========================================
-    const btnNavStart = document.getElementById("navStart"); const btnNavKalendarz = document.getElementById("navKalendarz"); const btnNavProfil = document.getElementById("navProfil"); const ekranDziecka = document.getElementById("ekranDziecka");
-    const wszystkieEkrany = [ 
-        ekranStart, document.getElementById("ekranProfil"), document.getElementById("ekranZdrowie"), 
-        document.getElementById("ekranObowiazki"), document.getElementById("ekranFinanse"), document.getElementById("ekranNotatki"), 
-        document.getElementById("ekranKalendarz"), document.getElementById("ekranKontakty"), document.getElementById("ekranStoper"), 
-        document.getElementById("ekranRozmiary"), document.getElementById("ekranCytaty"), document.getElementById("ekranPlan"), 
-        document.getElementById("ekranPosilki"), document.getElementById("ekranSejf"), document.getElementById("ekranAsystent"), 
-        document.getElementById("ekranPakowanie"), document.getElementById("ekranOsiagniecia"), 
-        document.getElementById("ekranPremium"), document.getElementById("ekranBlik"), document.getElementById("ekranKarmienie"), 
-        document.getElementById("ekranBilans"), document.getElementById("ekranEkrany"), document.getElementById("ekranBackup"), ekranDziecka, ekranLogowania
-    ];
+    // OBSŁUGA LINKÓW DO REGULAMINU I WROĆ
+    document.getElementById("linkRegulaminLogowanie").addEventListener("click", (e) => { e.preventDefault(); pokazEkran(ekranRegulamin, "Regulamin"); });
+    document.getElementById("linkRegulaminFooter").addEventListener("click", (e) => { e.preventDefault(); pokazEkran(ekranRegulamin, "Regulamin"); });
+    
+    document.getElementById("btnWrocRegulamin").addEventListener("click", () => {
+        if (auth.currentUser) {
+            btnNavStart.click(); // Jeśli zalogowany, wraca na pulpit
+        } else {
+            pokazEkran(ekranLogowania, "Logowanie"); // Jeśli nie, wraca do logowania
+        }
+    });
 
-    function czyscPasekNawigacji() { btnNavStart.classList.remove("aktywny"); btnNavKalendarz.classList.remove("aktywny"); btnNavProfil.classList.remove("aktywny"); }
-    function pokazEkran(ekranDoPokazania, tytul) {
-        wszystkieEkrany.forEach(e => { if(e) e.classList.add("ukryty"); }); 
-        if(ekranDoPokazania) ekranDoPokazania.classList.remove("ukryty");
-        document.getElementById("tytulAplikacji").innerText = tytul;
-        if (ekranDoPokazania === ekranDziecka || ekranDoPokazania === document.getElementById("ekranPremium") || ekranDoPokazania === document.getElementById("ekranBlik") || ekranDoPokazania === ekranLogowania) {
-            pasekDolny.classList.add("ukryty"); 
-        } else { pasekDolny.classList.remove("ukryty"); }
-    }
+    // ==========================================
+    // NAWIGACJA
+    // ==========================================
+    const btnNavStart = document.getElementById("navStart"); const btnNavKalendarz = document.getElementById("navKalendarz"); const btnNavProfil = document.getElementById("navProfil");
 
     function odswiezWidokPulpitu() {
         const baner = document.getElementById("banerPremiumPulpit"); 
@@ -321,7 +336,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if(!czyPremium) { pokazEkran(document.getElementById("ekranPremium"), "Konto Premium 👑"); } else { pokazEkran(document.getElementById("ekranBackup"), "Kopia Zapasowa 💾"); }
     });
 
-    document.getElementById("kafelekTrybDziecka").addEventListener("click", () => { pokazEkran(ekranDziecka, "Tryb Dziecka 🚀"); renderujWidokDziecka(); });
+    document.getElementById("kafelekTrybDziecka").addEventListener("click", () => { pokazEkran(document.getElementById("ekranDziecka"), "Tryb Dziecka 🚀"); renderujWidokDziecka(); });
     
     const banerPremium = document.getElementById("banerPremiumPulpit");
     if(banerPremium) { banerPremium.addEventListener("click", () => { pokazEkran(document.getElementById("ekranPremium"), "Konto Premium 👑"); }); }
@@ -343,6 +358,12 @@ document.addEventListener("DOMContentLoaded", function() {
     if(przyciskAktywuj) {
         przyciskAktywuj.addEventListener("click", () => {
             const wpisanyKod = document.getElementById("inputKodAktywacyjny").value.trim().toUpperCase();
+            
+            // WERYFIKACJA ZGODY PREMIUM
+            if(!document.getElementById("zgodaPremium").checked) {
+                return alert("Aby aktywować kod, musisz wyrazić zgodę na natychmiastowe dostarczenie produktu cyfrowego i zaakceptować Regulamin!");
+            }
+
             if (PULA_KODOW_PREMIUM.includes(wpisanyKod)) {
                 zapiszWChmurze("rodzicownikPremium", "true"); czyPremium = true; czyPremiumPelne = true;
                 alert("✅ Gratulacje! Kod poprawny. Wersja Premium została odblokowana na zawsze!");
