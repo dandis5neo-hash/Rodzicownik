@@ -626,13 +626,16 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("btnDodajNagrode").addEventListener("click", () => { const n = document.getElementById("nowaNagrodaNazwa").value.trim(); const k = parseInt(document.getElementById("nowaNagrodaKoszt").value); if(n&&k) { bazaNagrod.push({id:Date.now(), nazwa:n, koszt:k}); zapiszWChmurze("gryNagrody", bazaNagrod); document.getElementById("nowaNagrodaNazwa").value=""; document.getElementById("nowaNagrodaKoszt").value=""; renderujNagrody(); }});
 
     const oknoCzatu = document.getElementById("kontenerWiadomosci");
-
+// Funkcja pomocnicza dla Asystenta - sprawdza czy w zdaniu jest któreś ze słów
+function czyWTekscieJest(tekst, slowaKluczowe) {
+    return slowaKluczowe.some(slowo => tekst.toLowerCase().includes(slowo));
+}
     function renderujCzat() {
         let powitanieHTML = "";
         if (czyPremium) {
-            powitanieHTML = `<div class="dymek-czatu dymek-inny"><div class="czat-autor">${czyTrial ? "Asystent (Próbne Premium)" : "Asystent D@niel (Premium) 👑"}</div><div class="czat-tresc">Cześć! Potrafię zarządzać aplikacją. Spróbuj napisać:<br><br><i>"Ustaw stoper na 5 minut"</i><br><i>"Zapisz karmienie z prawej piersi"</i><br><i>"Podałem 5ml ibuprofenu"</i><br><i>"Wydałem 15 zł na lody"</i><br><i>"Młody zdał telefon"</i></div></div>`;
+            powitanieHTML = `<div class="dymek-czatu dymek-inny"><div class="czat-autor">${czyTrial ? "Asystent (Próbne Premium)" : "Asystent D@niel (Premium) 👑"}</div><div class="czat-tresc">Cześć! Jestem Twoim wirtualnym asystentem. Pomogę Ci zarządzać aplikacją, liczyć dawki leków i prowadzić notatki.<br><br>Napisz do mnie <strong>"co potrafisz?"</strong> lub <strong>"instrukcja"</strong>, a z przyjemnością pokażę Ci listę moich umiejętności! 🚀</div></div>`;
         } else {
-            powitanieHTML = `<div class="dymek-czatu dymek-inny"><div class="czat-autor">Asystent D@niel (Wersja Darmowa) 🤖</div><div class="czat-tresc">Cześć! W darmowej wersji służę radą i wsparciem. Zapytaj mnie o katar lub poproś o żart.<br><br>W wersji <strong>Premium</strong> potrafię automatycznie zapisywać Twoje wydatki, leki i czas ekranowy!</div></div>`;
+            powitanieHTML = `<div class="dymek-czatu dymek-inny"><div class="czat-autor">Asystent D@niel (Wersja Darmowa) 🤖</div><div class="czat-tresc">Cześć! Służę dobrą radą i wsparciem w codziennych wyzwaniach. Chętnie pomogę Ci przy drobnych dolegliwościach dziecka lub poprawię humor.<br><br>Zapytaj mnie: <strong>"co potrafisz?"</strong>, aby dowiedzieć się, jak możemy współpracować! ✨</div></div>`;
         }
         
         oknoCzatu.innerHTML = powitanieHTML;
@@ -735,7 +738,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         odpTresc = `Zaktualizowałem garderobę! Twój nowy rozmiar to: <strong>${rodzaj} ${wartosc}</strong>. 👕 Zapisałem z dzisiejszą datą.`;
                     } else { odpTresc = "Jaki to rozmiar? Wpisz np. 'Rozmiar buta 28'."; }
                 }
-                else if (zapytanie.includes("kalendarz") || zapytanie.includes("zaplanuj")) {
+                else if ((zapytanie.includes("dodaj") && zapytanie.includes("kalendarz")) || zapytanie.includes("zaplanuj")) {
                     const wydarzenie = tekst.replace(/dodaj do kalendarza/i, "").replace(/zaplanuj w kalendarzu/i, "").replace(/w kalendarzu/i, "").replace(/do kalendarza/i, "").trim();
                     const dStr = new Date().toISOString().split('T')[0];
                     bazaKalendarz.push({ id: Date.now(), tytul: wydarzenie.charAt(0).toUpperCase() + wydarzenie.slice(1), data: dStr, czas: "", dataPełna: `${dStr}T00:00` });
@@ -769,6 +772,66 @@ document.addEventListener("DOMContentLoaded", function() {
                 else if (zapytanie.includes("zmęczon") || zapytanie.includes("mam dość") || zapytanie.includes("płacz") || zapytanie.includes("ciężki dzień")) {
                     odpTresc = "Widzę, że masz słabszy moment. Pamiętaj: jesteś wspaniałym rodzicem, a to tylko gorszy dzień, nie gorsze życie. ❤️ Zrób sobie gorącą herbatę, weź głęboki oddech. Każda burza kiedyś mija! Jestem tu dla Ciebie.";
                 }
+                // Wklej to w łańcuchu if/else if wewnątrz setTimeout:
+
+else if (czyWTekscieJest(zapytanie, ["kiedy jadł", "ostatnie karmienie", "o której jadł", "kiedy pił"])) {
+    if (bazaKarmienie.length > 0) {
+        const ost = bazaKarmienie[0]; // Pobieramy najnowszy wpis (indeks 0 bo używasz unshift)
+        odpTresc = `Ostatnie zarejestrowane karmienie było <strong>${ost.data} o godzinie ${ost.czas}</strong>.<br>Rodzaj: ${ost.typ} ${ost.ilosc ? '('+ost.ilosc+' ml)' : ''}.`;
+    } else {
+        odpTresc = "Nie mam jeszcze żadnych zapisów o karmieniu w bazie. Użyj przycisku 'Dodaj' w module Karmienie lub napisz mi 'Zjadł 120ml'.";
+    }
+}
+// Kolejny blok else if:
+
+else if (czyWTekscieJest(zapytanie, ["pokaż", "otwórz", "przejdź do", "uruchom"])) {
+    if (zapytanie.includes("szczep")) { document.getElementById("kafelekBilans").click(); odpTresc = "Proszę bardzo! Otwieram Kartę Szczepień i Bilansu."; }
+    else if (zapytanie.includes("kalendarz")) { btnNavKalendarz.click(); odpTresc = "Otwieram Twój Kalendarz."; }
+    else if (zapytanie.includes("profil") || zapytanie.includes("dzieck")) { btnNavProfil.click(); odpTresc = "Przełączam na Profil Dziecka."; }
+    else if (zapytanie.includes("sejf")) { document.getElementById("kafelekSejf").click(); odpTresc = "Otwieram Sejf Dokumentów."; }
+    else if (zapytanie.includes("punkty") || zapytanie.includes("obowiąz")) { document.getElementById("kafelekObowiazki").click(); odpTresc = "Sprawdźmy punkty i obowiązki."; }
+    else { odpTresc = "Mogę Cię przenieść do Kalendarza, Profilu, Szczepień, Sejfu lub Punktów. Napisz np. 'Otwórz kalendarz'."; }
+}
+// Kolejny blok else if:
+
+else if (czyWTekscieJest(zapytanie, ["saldo", "ile mam kasy", "stan konta", "finanse"])) {
+    let stylSalda = saldoFinansow >= 0 ? "#10b981" : "#ef4444";
+    odpTresc = `Twój aktualny stan skarbony to: <strong style="color:${stylSalda}; font-size: 18px;">${saldoFinansow.toFixed(2)} zł</strong>.<br>Ostatnia transakcja: ${historiaFinansow.length > 0 ? historiaFinansow[0].opis : "Brak"}.`;
+}
+// --- ETAP 3: BAZA WIEDZY RODZICA ---
+
+else if (czyWTekscieJest(zapytanie, ["gorączk", "temperatura", "goraczka"])) {
+    odpTresc = "Przy gorączce (powyżej 38.5°C) możesz podać Paracetamol lub Ibuprofen (uwaga: Ibuprofenu nie podajemy przy ospie wietrznej!). Pamiętaj, by dostosować dawkę do wagi dziecka. Możesz to łatwo sprawdzić, pisząc mi np. <strong>'Oblicz dawkę'</strong>. W razie wątpliwości skonsultuj się z lekarzem! 🩺";
+}
+else if (czyWTekscieJest(zapytanie, ["kolk", "brzuszek boli", "wzdęcia"])) {
+    odpTresc = "Kolka to trudny czas, ale minie! Spróbuj ciepłych okładów na brzuszek (np. z termoforu z pestek wiśni), delikatnego masażu (ruchy okrężne zgodnie ze wskazówkami zegara), noszenia w chuście lub tzw. 'rowerka' nóżkami dziecka. Jesteś super rodzicem, dacie radę! ❤️";
+}
+else if (czyWTekscieJest(zapytanie, ["ząbkow", "zęby", "dziąsła"])) {
+    odpTresc = "Ząbkowanie bywa bolesne. Co może pomóc? Schłodzone w lodówce gryzaki (ale nie z zamrażarki!), delikatny masaż dziąseł silikonową nakładką na palec lub doraźnie specjalne żele z apteki. Jeśli bardzo boli, rozważ środek przeciwbólowy dopasowany do wagi. 🦷";
+}
+else if (czyWTekscieJest(zapytanie, ["katar", "zatkany nos", "smarki"])) {
+    odpTresc = "Zatkany nosek? Polecam częste inhalacje z soli fizjologicznej (nebulizator to przyjaciel!), odciąganie wydzieliny aspiratorem oraz dbanie o nawilżenie i niższą temperaturę w pokoju (ok. 20°C). Położenie dziecka z główką nieco wyżej ułatwi mu oddychanie w nocy. 💧";
+}
+else if (czyWTekscieJest(zapytanie, ["kaszel", "kaszle"])) {
+    odpTresc = "Przy kaszlu najważniejsze jest nawilżanie! Zrób inhalację z soli fizjologicznej i podawaj dziecku dużo wody do picia. Suche powietrze nasila kaszel, więc warto przewietrzyć pokój. Jeśli kaszel jest duszący lub szczekający – skonsultuj się z pediatrą! 🌬️";
+}
+// --- ETAP 4: POGAWĘDKI (SMALL TALK) ---
+
+else if (czyWTekscieJest(zapytanie, ["hej", "cześć", "witaj", "dzień dobry", "siema", "dobry wieczór"])) {
+    odpTresc = "Cześć! 👋 Fajnie Cię widzieć. W czym mogę Ci dzisiaj pomóc? Zapisujemy jakieś karmienie, wydatki, czy może potrzebujesz porady?";
+}
+else if (czyWTekscieJest(zapytanie, ["co słychać", "jak się masz", "co tam", "jak leci"])) {
+    odpTresc = "U mnie wszystkie systemy działają na 100%! 🤖 A jak Twoje rodzicielskie baterie? Pamiętaj, że w razie spadku energii służę wsparciem, a nawet opowiem suchy żart, jeśli potrzebujesz uśmiechu!";
+}
+else if (czyWTekscieJest(zapytanie, ["kim jesteś", "co potrafisz", "jak działasz", "pomóż", "instrukcja"])) {
+    odpTresc = "Jestem Daniel, Twój wirtualny pomocnik w Rodzicowniku! 🦸‍♂️<br><br>Potrafię m.in.:<br>• Zapisywać wydatki (np. <i>'Wydałem 20 zł na pampersy'</i>)<br>• Liczyć dawki leków (<i>'Oblicz dawkę'</i>)<br>• Zapisywać karmienia (<i>'Zjadł 120ml z butelki'</i>)<br>• Ustawiać stoper (<i>'Ustaw stoper na 10 minut'</i>)<br>• Doradzać w chorobie (<i>'Co na katar?'</i>)<br><br>Po prostu napisz, czego potrzebujesz!";
+}
+else if (czyWTekscieJest(zapytanie, ["dziękuję", "dzięki", "super", "ekstra", "dobra robota"])) {
+    odpTresc = "Nie ma za co! Od tego tu jestem. 😎 Jeśli będziesz mnie jeszcze potrzebować, wiesz gdzie mnie szukać!";
+}
+else if (czyWTekscieJest(zapytanie, ["dobranoc", "idę spać", "papa", "na razie"])) {
+    odpTresc = "Dobranoc! Oby noc była spokojna i przespana w całości. Ładuj baterie na jutro! 🌙💤";
+}
                 else {
                     const googleQuery = encodeURIComponent(tekst); const linkGoogle = `https://www.google.com/search?q=${googleQuery}`;
                     odpTresc = `Znalazłem podpowiedzi w sieci na ten temat: <br><a href="${linkGoogle}" target="_blank" class="btn-google-search">🌍 Szukaj w Google</a>`;
